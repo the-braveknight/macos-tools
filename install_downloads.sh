@@ -3,7 +3,8 @@
 # Note: This script assumes macOS 10.11 or higher. It is not expected to work with earlier versions of macOS.
 
 settings=./settings.plist
-if [ ! -e $settings ]; then
+./check_directory.sh $settings
+if [ $? -ne 0 ]; then
     echo No settings.plist file found! Exiting...
     exit 1
 fi
@@ -63,7 +64,8 @@ function installKexts() {
     done
 }
 
-if [ -d ./downloads ]; then
+./check_directory.sh ./downloads
+if [ $? -eq 0 ]; then
     # Extract all zip files within ./downloads folder
     extractAll ./downloads
 
@@ -77,11 +79,9 @@ if [ -d ./downloads ]; then
     installKexts ./downloads
 fi
 
-# If ./install_kexts.sh script exists, run
-if [ -e ./install_kexts.sh ]; then ./install_kexts.sh; fi
-
 # Create & install AppleHDA injector kext
-if [ -d Resources_$hda_codec ]; then
+./check_directory.sh ./Resources_$hda_codec
+if [ $? -eq 0 ]; then
     ./patch_hda.sh $hda_codec
     ./install_kext.sh AppleHDA_$hda_codec.kext
 else
@@ -90,4 +90,3 @@ fi
 
 # Repair permissions & update kernel cahce
 sudo kextcache -i /
-

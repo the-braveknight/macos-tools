@@ -1,7 +1,8 @@
 #!/bin/bash
 
 settings=$(pwd)/settings.plist
-if [ ! -e $settings ]; then
+./check_directory.sh $settings
+if [ $? -ne 0 ]; then
     echo No settings.plist file found! Exiting...
     exit 1
 fi

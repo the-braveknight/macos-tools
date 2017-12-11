@@ -1,5 +1,11 @@
 #!/bin/bash
 
+./check_directory.sh config.plist
+if [ $? -ne 0 ]; then
+    echo "No config.plist file found, exiting..."
+    exit 1
+fi
+
 EFI=$(./mount_efi.sh /)
 config=$EFI/EFI/Clover/config.plist
 
