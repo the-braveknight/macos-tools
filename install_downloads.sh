@@ -2,16 +2,12 @@
 
 # Note: This script assumes macOS 10.11 or higher. It is not expected to work with earlier versions of macOS.
 
+os_version=$(./os_version.sh)
+
 settings=./settings.plist
 ./check_directory.sh $settings
 if [ $? -ne 0 ]; then
     echo No settings.plist file found! Exiting...
-    exit 1
-fi
-
-os_version=$(./os_version.sh)
-if [ $os_version -lt 11 ]; then
-    echo Unsupported macOS version! Exiting...
     exit 1
 fi
 
