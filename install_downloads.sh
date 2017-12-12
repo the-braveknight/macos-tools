@@ -2,8 +2,6 @@
 
 # Note: This script assumes macOS 10.11 or higher. It is not expected to work with earlier versions of macOS.
 
-os_version=$(./os_version.sh)
-
 settings=./settings.plist
 ./check_directory.sh $settings
 if [ $? -ne 0 ]; then
@@ -73,15 +71,6 @@ if [ $? -eq 0 ]; then
 
     # Install all the kexts within ./downloads
     installKexts ./downloads
-fi
-
-# Create & install AppleHDA injector kext
-./check_directory.sh ./Resources_$hda_codec
-if [ $? -eq 0 ]; then
-    ./patch_hda.sh $hda_codec
-    ./install_kext.sh AppleHDA_$hda_codec.kext
-else
-    echo "No Resources_$hda_codec directory found; AppleHDA injector kext not installed"
 fi
 
 # Repair permissions & update kernel cahce
