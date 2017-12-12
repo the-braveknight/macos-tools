@@ -8,4 +8,4 @@ function findKext() {
     fi
 }
 
-findKext $@
+findKext "$@"

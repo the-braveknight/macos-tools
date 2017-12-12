@@ -12,4 +12,4 @@ function checkDirectory() {
     done
 }
 
-checkDirectory $@
+checkDirectory "$@"
