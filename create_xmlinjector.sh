@@ -12,7 +12,7 @@ function createLayoutsInjector() {
 
     cp $hda_native/Contents/Info.plist $hda_injector/Contents/Info.plist
 
-    ./fix_info.versions.sh $hda_injector/Contents/Info.plist
+    ./fix_info_versions.sh $hda_injector/Contents/Info.plist
 
     for layout in Resources_$1/layout*.plist; do
         ./tools/zlib deflate $layout > $hda_injector/Contents/Resources/$(basename $layout .plist).xml.zlib
