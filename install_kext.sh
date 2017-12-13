@@ -2,6 +2,8 @@
 
 DIR=$(dirname $0)
 
+kext=$1
+
 function installKext() {
     kextName=$(basename $1)
     echo Installing $kextName to /Library/Extensions
@@ -9,12 +11,10 @@ function installKext() {
     sudo cp -Rf $1 /Library/Extensions
 }
 
-$DIR/check_directory.sh $1
-if [ $? -eq 0 ]; then
-    installKext $1
-else
-    $DIR/check_directory $($DIR/find_kext.sh $1)
-    if [ $? -eq 0 ]; then
-        installKext $($DIR/find_kext.sh $1)
-    fi
+if [[ ! -d $kext ]]; then
+    echo "Usage: install_kext.sh {kext to install}"
+    echo "Example: install_kext.sh ~/Desktop/AppleHDAInjector.kext"
+    exit 1
 fi
+
+installKext $kext

@@ -1,8 +1,10 @@
 #!/bin/bash
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DIR=$(dirname $0)
 
 settings=$1
+
+downloads_dir=Downloads
 
 if [[ ! -e $settings ]]; then
     echo "Usage: download.sh {settings.plist file}"
@@ -21,8 +23,8 @@ function download() {
 os_version=$($DIR/os_version.sh)
 
 function downloadCategory() {
-    if [[ ! -d $DIR/downloads/$1 ]]; then
-        mkdir $DIR/downloads/$1
+    if [[ ! -d $downloads_dir/$1 ]]; then
+        mkdir $downloads_dir/$1
     fi
 
     for ((file=0; 1; file++)); do
@@ -43,16 +45,16 @@ function downloadCategory() {
             continue
         fi
 
-        cd $DIR/downloads/$1
+        cd $downloads_dir/$1
         download $author $name
-        cd $DIR
+        cd ../..
     done
 }
 
-rm -Rf $DIR/downloads && mkdir $DIR/downloads
+rm -Rf $downloads_dir && mkdir $downloads_dir
 
 # Download kexts
-downloadCategory "kexts"
+downloadCategory "Kexts"
 
 # Download tools
-downloadCategory "tools"
+downloadCategory "Tools"

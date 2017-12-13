@@ -6,6 +6,8 @@ DIR=$(dirname $0)
 
 settings=$1
 
+downloads_dir=Downloads
+
 if [[ ! -e $settings ]]; then
     echo "Usage: install_downloads.sh {settings.plist file}"
     echo "Example: install_downloads.sh ~/Desktop/settings.plist"
@@ -62,19 +64,18 @@ function installKexts() {
     done
 }
 
-$DIR/check_directory.sh $DIR/downloads
-if [ $? -eq 0 ]; then
+if [[ -d $downloads_dir ]]; then
     # Extract all zip files within downloads folder
-    extractAll $DIR/downloads
+    extractAll $downloads_dir
 
     # Install all apps (*.app) within downloads folder
-    installApps $DIR/downloads
+    installApps $downloads_dir
 
     # Install all binaries within downloads folder
-    installBinaries $DIR/downloads
+    installBinaries $downloads_dir
 
     # Install all the kexts within downloads
-    installKexts $DIR/downloads
+    installKexts $downloads_dir
 fi
 
 # Repair permissions & update kernel cahce
