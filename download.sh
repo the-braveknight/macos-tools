@@ -27,20 +27,20 @@ function downloadCategory() {
         mkdir $downloads_dir/$1
     fi
 
-    for ((file=0; 1; file++)); do
-        author=$(/usr/libexec/PlistBuddy -c "Print ':Downloads:$1:$file:author'" $settings 2>&1)
-        name=$(/usr/libexec/PlistBuddy -c "Print ':Downloads:$1:$file:name'" $settings 2>&1)
+    for ((index=0; 1; index++)); do
+        author=$(/usr/libexec/PlistBuddy -c "Print ':Downloads:$1:$index:author'" $settings 2>&1)
+        name=$(/usr/libexec/PlistBuddy -c "Print ':Downloads:$1:$index:name'" $settings 2>&1)
 
         if [[ "$author" == *"Does Not Exist"* ]]; then
             break
         fi
 
-        minimum_os=$(/usr/libexec/PlistBuddy -c "Print ':Downloads:$1:$file:Minimum OS'" $settings 2>&1)
+        minimum_os=$(/usr/libexec/PlistBuddy -c "Print ':Downloads:$1:$index:Minimum OS'" $settings 2>&1)
         if [[ "$minimum_os" != *"Does Not Exist"* && $os_version -lt $minimum_os ]]; then
             continue
         fi
 
-        maximum_os=$(/usr/libexec/PlistBuddy -c "Print ':Downloads:$1:$file:Maximum OS'" $settings 2>&1)
+        maximum_os=$(/usr/libexec/PlistBuddy -c "Print ':Downloads:$1:$index:Maximum OS'" $settings 2>&1)
         if [[ "$maximum_os" != *"Does Not Exist"* && $os_version -gt $maximum_os ]]; then
             continue
         fi

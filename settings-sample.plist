@@ -2,15 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>Series</key>
-	<string>Haswell</string>
-	<key>Laptop</key>
-	<true/>
 	<key>Codec</key>
 	<string>CX20751</string>
 	<key>Downloads</key>
 	<dict>
-		<key>kexts</key>
+		<key>Kexts</key>
 		<array>
 			<dict>
 				<key>author</key>
@@ -99,7 +95,7 @@
 				<string>os-x-elan-ps2-kext</string>
 			</dict>
 		</array>
-		<key>tools</key>
+		<key>Tools</key>
 		<array>
 			<dict>
 				<key>author</key>
