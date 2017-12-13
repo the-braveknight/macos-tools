@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DIR=$(dirname $0)
-build_dir=$DIR/Build
+build_dir=Build
 
 hotpatch_dir=$1
 dsl_files=$hotpatch_dir/*.dsl

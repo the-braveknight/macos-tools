@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DIR=$(dirname $0)
-build_dir=$DIR/Build
+build_dir=Build
 
 aml_binaries=$build_dir/*.aml
 
