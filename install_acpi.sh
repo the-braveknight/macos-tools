@@ -1,14 +1,17 @@
 #!/bin/bash
 
-aml_binaries=./Build/*.aml
+DIR=$(dirname $0)
+build_dir=$DIR/Build
 
-./check_directory.sh $aml_binaries
+aml_binaries=$build_dir/*.aml
+
+$DIR/check_directory.sh $aml_binaries
 if [ $? -ne 0 ]; then
     echo "No compiled AML binaries found in ./Build. Please run make_acpi.sh"
     exit 1
 fi
 
-EFI=$(./mount_efi.sh)
+EFI=$($DIR/mount_efi.sh)
 
 function installAML() {
     fileName=$(basename $1)

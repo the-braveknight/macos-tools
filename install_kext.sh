@@ -1,5 +1,7 @@
 #!/bin/bash
 
+DIR=$(dirname $0)
+
 function installKext() {
     kextName=$(basename $1)
     echo Installing $kextName to /Library/Extensions
@@ -7,12 +9,12 @@ function installKext() {
     sudo cp -Rf $1 /Library/Extensions
 }
 
-./check_directory.sh $1
+$DIR/check_directory.sh $1
 if [ $? -eq 0 ]; then
     installKext $1
 else
-    ./check_directory $(./find_kext.sh $1)
+    $DIR/check_directory $($DIR/find_kext.sh $1)
     if [ $? -eq 0 ]; then
-        installKext $(./find_kext.sh $1)
+        installKext $($DIR/find_kext.sh $1)
     fi
 fi

@@ -1,14 +1,16 @@
 #!/bin/bash
 
-config=config.plist
+DIR=$(dirname $0)
 
-./check_directory.sh $config
-if [ $? -ne 0 ]; then
-    echo "No config.plist file found, exiting..."
+config=$1
+
+if [[ ! -e $config ]]; then
+    echo "Usage: install_config.sh {Clover config.plist}"
+    echo "Example: install_config.sh ~/Desktop/config.plist"
     exit 1
 fi
 
-EFI=$(./mount_efi.sh)
+EFI=$($DIR/mount_efi.sh)
 
 echo Copying $config to $EFI/EFI/Clover
 cp $config $EFI/EFI/Clover

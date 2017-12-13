@@ -1,10 +1,15 @@
 #!/bin/bash
 
-dsl_files=./hotpatch/*.dsl
+DIR=$(dirname $0)
+build_dir=$DIR/Build
 
-./check_directory.sh $dsl_files
+hotpatch_dir=$1
+dsl_files=$hotpatch_dir/*.dsl
+
+$DIR/check_directory.sh $dsl_files
 if [ $? -ne 0 ]; then
-    echo "No DSL files in ./hotpatch. Exiting..."
+    echo "Usage: make_acpi.sh {hotpatch dsl directory}"
+    echo "Usage: make_acpi.sh ~/Desktop/hotpatch"
     exit 1
 fi
 
@@ -12,8 +17,8 @@ function compile() {
     iasl -p $2/$(basename $1 .dsl).aml $1
 }
 
-rm -Rf ./Build && mkdir ./Build
+rm -Rf $build_dir && mkdir $build_dir
 
 for dsl in $dsl_files; do
-    compile $dsl ./Build
+    compile $dsl $build_dir
 done

@@ -1,9 +1,13 @@
 #!/bin/bash
 
+DIR=$(dirname $0)
+
+resources=$1
+
 hda_native=/System/Library/Extensions/AppleHDA.kext
 
 function createLayoutsInjector() {
-    hda_injector=AppleHDA_$1.kext
+    hda_injector=AppleHDAInjector.kext
 
     echo "Creating $hda_injector"
 
@@ -12,23 +16,22 @@ function createLayoutsInjector() {
 
     cp $hda_native/Contents/Info.plist $hda_injector/Contents/Info.plist
 
-    ./fix_info_versions.sh $hda_injector/Contents/Info.plist
+    $DIR/fix_info_versions.sh $hda_injector/Contents/Info.plist
 
-    for layout in Resources_$1/layout*.plist; do
-        ./tools/zlib deflate $layout > $hda_injector/Contents/Resources/$(basename $layout .plist).xml.zlib
+    for layout in $resources/layout*.plist; do
+        $DIR/tools/zlib deflate $layout > $hda_injector/Contents/Resources/$(basename $layout .plist).xml.zlib
     done
 
-    ./tools/zlib inflate $hda_native/Contents/Resources/Platforms.xml.zlib > /tmp/Platforms.plist
+    $DIR/tools/zlib inflate $hda_native/Contents/Resources/Platforms.xml.zlib > /tmp/Platforms.plist
     /usr/libexec/PlistBuddy -c "Delete ':PathMaps'" /tmp/Platforms.plist
-    /usr/libexec/PlistBuddy -c "Merge Resources_$1/Platforms.plist" /tmp/Platforms.plist
-    ./tools/zlib deflate /tmp/Platforms.plist > $hda_injector/Contents/Resources/Platforms.xml.zlib
+    /usr/libexec/PlistBuddy -c "Merge $resources/Platforms.plist" /tmp/Platforms.plist
+    $DIR/tools/zlib deflate /tmp/Platforms.plist > $hda_injector/Contents/Resources/Platforms.xml.zlib
 }
 
-./check_directory.sh Resources_$1
-if [ $? -ne 0 ]; then
-    echo Usage: create_xmlinjector.sh {codec}
-    echo Example: create_xmlinjector.sh CX20751
+if [[ ! -d $resources ]]; then
+    echo "Usage: create_xmlinjector.sh {HDA resources folder}"
+    echo "Example: create_xmlinjector.sh Resouces_CX20751"
     exit 1
 fi
 
-createLayoutsInjector "$1"
+createLayoutsInjector

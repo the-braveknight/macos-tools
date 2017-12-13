@@ -1,8 +1,8 @@
 #!/bin/bash
 
-function checkDirectory() {
-    ./check_directory.sh $@
-}
+DIR=$(dirname $0)
+
+plist=$1
 
 function fixVersion() {
     oldValue=$(/usr/libexec/PlistBuddy -c "Print $1" $2)
@@ -10,13 +10,13 @@ function fixVersion() {
     /usr/libexec/PlistBuddy -c "Set $1 '$newValue'" $2
 }
 
-checkDirectory $1
-if [ $? -ne 0 ]; then
-    echo "File '$1' does not exist."
+if [[ ! -e $plist ]]; then
+    echo "Usage: fix_info_versions.sh {Info.plist file}"
+    echo "Example: fix_info_versions.sh ~/Desktop/MyKext.kext/Contents/Info.plist"
     exit 1
 fi
 
-fixVersion ":NSHumanReadableCopyright" $1
-fixVersion ":CFBundleVersion" $1
-fixVersion ":CFBundleGetInfoString" $1
-fixVersion ":CFBundleShortVersionString" $1
+fixVersion ":NSHumanReadableCopyright" $plist
+fixVersion ":CFBundleVersion" $plist
+fixVersion ":CFBundleGetInfoString" $plist
+fixVersion ":CFBundleShortVersionString" $plist

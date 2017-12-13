@@ -1,5 +1,9 @@
 #!/bin/bash
 
+DIR=$(dirname $0)
+
+app=$1
+
 function installApp() {
     appName=$(basename $1)
     echo Installing $appName to /Applications
@@ -7,7 +11,10 @@ function installApp() {
     cp -Rf $1 /Applications
 }
 
-./check_directory.sh $1
-if [ $? -eq 0 ]; then
-    installApp $1
+if [[ ! -d $app ]]; then
+    echo "Usage: install_app.sh {app to install}"
+    echo "Example: install_app.sh ~/Downloads/MaciASL.app"
+    exit 1
 fi
+
+installApp $app

@@ -1,9 +1,13 @@
 #!/bin/bash
 
-settings=$(pwd)/settings.plist
-./check_directory.sh $settings
-if [ $? -ne 0 ]; then
-    echo No settings.plist file found! Exiting...
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+settings=$1
+
+if [[ ! -e $settings ]]; then
+    echo "Usage: download.sh {settings.plist file}"
+    echo "Example: download.sh ~/Desktop/settings.plist"
+    echo "Refer to settings-sample.plist for example"
     exit 1
 fi
 
@@ -14,9 +18,13 @@ function download() {
     curl --remote-name --progress-bar --location https://bitbucket.org/$scrape
 }
 
-os_version=$(./os_version.sh)
+os_version=$($DIR/os_version.sh)
 
 function downloadCategory() {
+    if [[ ! -d $DIR/downloads/$1 ]]; then
+        mkdir $DIR/downloads/$1
+    fi
+
     for ((file=0; 1; file++)); do
         author=$(/usr/libexec/PlistBuddy -c "Print ':Downloads:$1:$file:author'" $settings 2>&1)
         name=$(/usr/libexec/PlistBuddy -c "Print ':Downloads:$1:$file:name'" $settings 2>&1)
@@ -35,18 +43,16 @@ function downloadCategory() {
             continue
         fi
 
+        cd $DIR/downloads/$1
         download $author $name
+        cd $DIR
     done
 }
 
-rm -Rf ./downloads && mkdir ./downloads && cd ./downloads
+rm -Rf $DIR/downloads && mkdir $DIR/downloads
 
 # Download kexts
-mkdir ./kexts && cd ./kexts
 downloadCategory "kexts"
-cd ..
 
 # Download tools
-mkdir ./tools && cd ./tools
 downloadCategory "tools"
-cd ..
