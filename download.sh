@@ -23,6 +23,7 @@ function download() {
 os_version=$($DIR/os_version.sh)
 
 function downloadCategory() {
+    echo "Downloading $1..."
     if [[ ! -d $downloads_dir/$1 ]]; then
         mkdir $downloads_dir/$1
     fi
