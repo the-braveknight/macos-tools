@@ -1,16 +1,6 @@
 #!/bin/bash
 
 DIR=$(dirname $0)
-build_dir=Build
-
-aml_binaries=$build_dir/*.aml
-
-$DIR/check_directory.sh $aml_binaries
-if [ $? -ne 0 ]; then
-    echo "No compiled AML binaries found in ./Build. Please run make_acpi.sh"
-    exit 1
-fi
-
 EFI=$($DIR/mount_efi.sh)
 
 function installAML() {
@@ -19,6 +9,12 @@ function installAML() {
     cp $1 $EFI/EFI/Clover/ACPI/patched
 }
 
-for aml in $aml_binaries; do
+if [[ ! -e $1 ]]; then
+    echo "Usage: install_acpi.sh {SSDT to install}"
+    echo "Example: install_acpi.sh ~/Downloads/SSDT-IGPU.aml"
+    exit 1
+fi
+
+for aml in $@; do
     installAML $aml
 done
