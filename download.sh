@@ -1,33 +1,13 @@
 #!/bin/bash
 
-DIR=$(dirname $0)
+DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 
-settings=$1
-
-downloads_dir=Downloads
-
-if [[ ! -e $settings ]]; then
-    echo "Usage: download.sh {settings.plist file}"
-    echo "Example: download.sh ~/Desktop/settings.plist"
-    echo "Refer to settings-sample.plist for example"
-    exit 1
-fi
-
-function download() {
-    curl --silent --output /tmp/org.$1.download.txt --location https://bitbucket.org/$1/$2/downloads/
-    scrape=$(grep -o -m 1 "$1/$2/downloads/$3.*\.zip" /tmp/org.$1.download.txt | sed 's/".*//')
-    echo Downloading $(basename $scrape)
-    curl --remote-name --progress-bar --location https://bitbucket.org/$scrape
-}
+settings=$(find $PWD -name $1)
 
 os_version=$($DIR/os_version.sh)
 
-function downloadCategory() {
-    echo "Downloading $1..."
-    if [[ ! -d $downloads_dir/$1 ]]; then
-        mkdir $downloads_dir/$1
-    fi
-
+function bitbucketDownload() {
+    rm -Rf Downloads/$1 && mkdir -p Downloads/$1 && cd Downloads/$1
     for ((index=0; 1; index++)); do
         author=$(/usr/libexec/PlistBuddy -c "Print ':Downloads:$1:$index:author'" $settings 2>&1)
         name=$(/usr/libexec/PlistBuddy -c "Print ':Downloads:$1:$index:name'" $settings 2>&1)
@@ -46,16 +26,36 @@ function downloadCategory() {
             continue
         fi
 
-        cd $downloads_dir/$1
-        download $author $name
-        cd ../..
+        $DIR/bitbucket_download.sh $author $name
     done
+    cd ../..
 }
 
-rm -Rf $downloads_dir && mkdir $downloads_dir
+function downloadACPI() {
+    rm -Rf Downloads/Hotpatch && mkdir -p Downloads/Hotpatch && cd Downloads/Hotpatch
+    for ((index=0; 1; index++)); do
+        SSDT=$(/usr/libexec/PlistBuddy -c "Print ':Hotpatch:$index'" $settings 2>&1)
 
-# Download kexts
-downloadCategory "Kexts"
+        if [[ "$SSDT" == *"Does Not Exist"* ]]; then
+            break
+        fi
 
-# Download tools
-downloadCategory "Tools"
+        $DIR/download_ssdt.sh $SSDT
+    done
+    cd ../..
+}
+
+if [[ ! -e $settings ]]; then
+    echo "Usage: download.sh {settings.plist file}"
+    echo "Example: download.sh ~/Desktop/settings.plist"
+    echo "Refer to settings-sample.plist for example"
+    exit 1
+fi
+
+# Download Kexts
+bitbucketDownload "Kexts"
+
+# Download Tools
+bitbucketDownload "Tools"
+
+downloadACPI
