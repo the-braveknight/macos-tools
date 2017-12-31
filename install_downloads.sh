@@ -27,16 +27,9 @@ function check() {
     return 0
 }
 
-function extract() {
-    filePath=${1/.zip/}
-    rm -Rf $filePath
-    unzip -q $1 -d $filePath
-    rm -Rf $filePath/__MACOSX
-}
-
-function extractAll() {
+function unarchiveAll() {
     for zip in $(find $@ -name *.zip); do
-        extract $zip
+        $DIR/unarchive_file.sh $zip
     done
 }
 
@@ -66,7 +59,7 @@ function installKexts() {
 
 if [[ -d $downloads_dir ]]; then
     # Extract all zip files within downloads folder
-    extractAll $downloads_dir
+    unarchiveAll $downloads_dir
 
     # Install all apps (*.app) within downloads folder
     installApps $downloads_dir
@@ -74,9 +67,6 @@ if [[ -d $downloads_dir ]]; then
     # Install all binaries within downloads folder
     installBinaries $downloads_dir
 
-    # Install all the kexts within downloads
+    # Install all the kexts within downloads folder
     installKexts $downloads_dir
 fi
-
-# Repair permissions & update kernel cahce
-sudo kextcache -i /
