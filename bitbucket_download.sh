@@ -1,18 +1,35 @@
 #!/bin/bash
 
-DIR=$(dirname $0)
-
 function download() {
-    curl --silent --output /tmp/org.$1.download.txt --location https://bitbucket.org/$1/$2/downloads/
-    scrape=$(grep -o -m 1 "$1/$2/downloads/$3.*\.zip" /tmp/org.$1.download.txt | sed 's/".*//')
-    echo Downloading $(basename $scrape)
-    curl --remote-name --progress-bar --location https://bitbucket.org/$scrape
+# $1: Output directory
+# $2: Author
+# $3: Project (repo)
+# $4: (Optional) Extra file name matching
+    curl --silent --output /tmp/org.$2.download.txt --location https://bitbucket.org/$2/$3/downloads/
+    scrape=$(grep -o -m 1 "$2/$3/downloads/$4.*\.zip" /tmp/org.$2.download.txt | sed 's/".*//')
+    fileName=$(basename $scrape)
+    echo Downloading $fileName
+    curl --progress-bar --location https://bitbucket.org/$scrape --output $1/$fileName
 }
 
-if [[ "$1" == "" ]]; then
-    echo "Usage: bitbucket_download.sh {bitbucket repo} {project} {(Optional) filename}"
-    echo "Example: bitbucket_download.sh RehabMan os-x-fakesmc-kozlek"
+function plistDownload() {
+    directory=Downloads/$(basename $1 .plist)
+    if [[ ! -d $directory ]]; then mkdir -p $directory; fi
+    for ((index=0; 1; index++)); do
+        author=$(/usr/libexec/PlistBuddy -c "Print ':$index:author'" $1 2>&1)
+        name=$(/usr/libexec/PlistBuddy -c "Print ':$index:name'" $1 2>&1)
+        if [[ "$author" == *"Does Not Exist"* ]]; then break; fi
+        download $directory $author $name
+    done
+}
+
+if [[ ! -e $1 ]]; then
+    echo "Usage: bitbucket_download.sh {plist file}"
+    echo "Example: bitbucket_download.sh ~/Desktop/Tools.plist"
+    exit 1
+elif [[ $(plutil $1) != *"OK"* ]]; then
+    echo "Error: Plist file corrupt or invalid."
     exit 1
 fi
 
-download $@
+plistDownload $1

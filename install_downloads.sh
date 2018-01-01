@@ -4,19 +4,18 @@
 
 DIR=$(dirname $0)
 
-settings=$1
-
 downloads_dir=Downloads
 
-if [[ ! -e $settings ]]; then
-    echo "Usage: install_downloads.sh {settings.plist file}"
-    echo "Example: install_downloads.sh ~/Desktop/settings.plist"
-    echo "Refer to settings-sample.plist for example"
+if [[ ! -e $1 ]]; then
+    echo "Usage: install_downloads.sh {kext exceptions plist file}"
+    echo "Example: install_downloads.sh Exceptions.plist"
+    exit 1
+elif [[ $(plutil $1) != *"OK"* ]]; then
+    echo "Error: Plist file corrupt or invalid."
     exit 1
 fi
 
-hda_codec=$(/usr/libexec/PlistBuddy -c 'Print :Codec' $settings 2>&1)
-exceptions=$(/usr/libexec/PlistBuddy -c 'Print :Exceptions' $settings 2>&1 | sed 's/.* //' | tr -d '{}')
+exceptions=$(/usr/libexec/PlistBuddy -c 'Print :' $1 2>&1 | sed 's/.* //' | tr -d '{}')
 
 function check() {
     for exception in $exceptions; do
