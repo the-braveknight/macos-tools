@@ -5,6 +5,7 @@ acpi_repo=https://github.com/RehabMan/OS-X-Clover-Laptop-Config/raw/master/hotpa
 function showOptions() {
     echo "-p,  Provide plist (array) with names of SSDTs."
     echo "-n,  Provide name of SSDT file."
+    echo "-o,  Provide output directory."
     echo "-h,  Show this help message."
 }
 
@@ -26,10 +27,12 @@ function download() {
 }
 
 function plistDownload() {
-    directory=Downloads/$(basename $1 .plist)
+# $1: Output directory
+# $2: Plist file
+    directory=$1/$(basename $2 .plist)
     if [[ ! -d $directory ]]; then mkdir -p $directory; fi
     for ((index=0; 1; index++)); do
-        ssdt=$(/usr/libexec/PlistBuddy -c "Print ':$index'" $1 2>&1)
+        ssdt=$(/usr/libexec/PlistBuddy -c "Print ':$index'" $2 2>&1)
         if [[ "$ssdt" == *"Does Not Exist"* ]]; then break; fi
         download $directory $ssdt
     done
@@ -37,13 +40,16 @@ function plistDownload() {
 
 if [[ ! -n $@ ]]; then showOptions; exit 1; fi
 
-while getopts n:p:h option; do
+while getopts n:p:o:h option; do
     case $option in
         n)
             ssdt=$OPTARG
         ;;
         p)
             plist=$OPTARG
+        ;;
+        o)
+            outputDirectory=$OPTARG
         ;;
         h)
             showOptions
@@ -56,10 +62,12 @@ while getopts n:p:h option; do
     esac
 done
 
+if [[ ! -e $outputDirectory ]]; then outputDirectory=Downloads; fi
+
 if [[ -n $plist ]]; then
     if [[ "$(plutil $plist)" != *"OK"* ]]; then plistError; exit 1; fi
-    plistDownload $plist
+    plistDownload $outputDirectory $plist
 else
     if [[ ! -n $ssdt ]]; then ssdtError; exit 1; fi
-    download . $ssdt
+    download $outputDirectory $ssdt
 fi

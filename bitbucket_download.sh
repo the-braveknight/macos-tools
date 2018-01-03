@@ -4,6 +4,7 @@ function showOptions() {
     echo "-p,  Provide plist (array) with name/author pairs."
     echo "-a,  Provide name of author."
     echo "-n,  Provide name of repo (project)."
+    echo "-o,  Provide output directory."
     echo "-h,  Show this help menu."
 }
 
@@ -29,11 +30,13 @@ function download() {
 }
 
 function plistDownload() {
-    directory=Downloads/$(basename $1 .plist)
+# $1: Output directory
+# $2: Plist file
+    directory=$1/$(basename $2 .plist)
     if [[ ! -d $directory ]]; then mkdir -p $directory; fi
     for ((index=0; 1; index++)); do
-        author=$(/usr/libexec/PlistBuddy -c "Print ':$index:author'" $1 2>&1)
-        name=$(/usr/libexec/PlistBuddy -c "Print ':$index:name'" $1 2>&1)
+        author=$(/usr/libexec/PlistBuddy -c "Print ':$index:author'" $2 2>&1)
+        name=$(/usr/libexec/PlistBuddy -c "Print ':$index:name'" $2 2>&1)
         if [[ "$author" == *"Does Not Exist"* ]]; then break; fi
         download $directory $author $name
     done
@@ -41,7 +44,7 @@ function plistDownload() {
 
 if [[ ! -n $@ ]]; then showOptions; exit 1; fi
 
-while getopts a:n:p:h option; do
+while getopts a:n:p:o:h option; do
     case $option in
     a)
         author=$OPTARG
@@ -51,6 +54,9 @@ while getopts a:n:p:h option; do
     ;;
     p)
         plist=$OPTARG
+    ;;
+    o)
+        outputDirectory=$OPTARG
     ;;
     h)
         showOptions
@@ -63,10 +69,12 @@ while getopts a:n:p:h option; do
     esac
 done
 
+if [[ ! -e $outputDirectory ]]; then outputDirectory=Downloads; fi
+
 if [[ -n $plist ]]; then
     if [[ "$(plutil $plist)" != *"OK"* ]]; then plistError; exit 1; fi
-    plistDownload $plist
+    plistDownload $outputDirectory $plist
 else
     if [[ ! -n $author || ! -n $name ]]; then inputError; exit 1; fi
-    download . $author $name
+    download $outputDirectory $author $name
 fi

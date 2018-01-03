@@ -4,11 +4,10 @@
 
 DIR=$(dirname $0)
 
-downloads_dir=Downloads
-
 function showOptions() {
     echo "-p,  Provide plist (array) of kext exceptions."
     echo "-e,  Provide string of kext exceptions."
+    echo "-d,  Provide downloads directory."
     echo "-h,  Show this help message."
 }
 
@@ -16,13 +15,16 @@ function plistError() {
     echo "Error: Plist file invalid or corrupted."
 }
 
-while getopts e:p:h option; do
+while getopts e:p:d:h option; do
     case $option in
         p)
             plist=$OPTARG
         ;;
         e)
             string=$OPTARG
+        ;;
+        d)
+            downloads_dir=$OPTARG
         ;;
         h)
             showOptions
@@ -34,6 +36,8 @@ while getopts e:p:h option; do
         ;;
     esac
 done
+
+if [[ ! -d $downloads_dir ]]; then downloads_dir=Downloads; fi
 
 if [[ -n $plist ]]; then
     if [[ "$(plutil $plist)" != *"OK"* ]]; then plistError; exit 1; fi
