@@ -6,8 +6,7 @@ DIR=$(dirname $0)
 
 function showOptions() {
     echo "-p,  Provide plist (array) of kext exceptions."
-    echo "-e,  Provide string of kext exceptions."
-    echo "-d,  Provide downloads directory."
+    echo "-e,  Provide string (or plist-array file) of kext exceptions."
     echo "-h,  Show this help message."
 }
 
@@ -15,13 +14,14 @@ function plistError() {
     echo "Error: Plist file invalid or corrupted."
 }
 
-while getopts e:p:d:h option; do
+while getopts e:p:h option; do
     case $option in
-        p)
-            plist=$OPTARG
-        ;;
         e)
-            string=$OPTARG
+            if [[ $(plutil $OPTARG) == *"OK"* ]]; then
+                exceptions=$(grep -o '<string>.*</string>' $OPTARG | sed -e 's/<[^>]*>//g')
+            else
+                exceptions=$OPTARG
+            fi
         ;;
         d)
             downloads_dir=$OPTARG
@@ -39,18 +39,9 @@ done
 
 if [[ ! -d $downloads_dir ]]; then downloads_dir=Downloads; fi
 
-if [[ -n $plist ]]; then
-    if [[ "$(plutil $plist)" != *"OK"* ]]; then plistError; exit 1; fi
-    exceptions=$(/usr/libexec/PlistBuddy -c 'Print :' $plist 2>&1 | sed 's/.* //' | tr -d '{}')
-elif [[ -n $string ]]; then
-    exceptions=$string
-fi
-
 function check() {
     for exception in $exceptions; do
-        if [[ "$1" == *"$exception"* ]]; then
-            return 1
-        fi
+        if [[ "$1" == *"$exception"* ]]; then return 1; fi
     done
     return 0
 }
@@ -77,10 +68,10 @@ function installBinaries() {
 }
 
 function installKexts() {
-    for kext in $($DIR/find_kext.sh "*.kext" $@); do
+    for kext in $($DIR/find_kext.sh -a); do
         check $kext
         if [ $? -eq 0 ]; then
-            $DIR/install_kext.sh $kext
+            $DIR/install_kext.sh -n $kext
         fi
     done
 }

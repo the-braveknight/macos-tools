@@ -2,6 +2,18 @@
 
 DIR=$(dirname $0)
 
+function kextError() {
+    echo "Error: Cannot find $1. Please make sure you enter the correct path."
+}
+
+function showOptions() {
+    echo "-n,  Provide path of kext(s) to install."
+    echo "-a,  Install all kexts within current directory (or the directory chosen with -d)."
+    echo "-e,  Provide string (or plist-array file) of kext exceptions."
+    echo "-d,  Provide directory."
+    echo "-h,  Show this help message."
+}
+
 function installKext() {
     kextName=$(basename $1)
     echo Installing $kextName to /Library/Extensions
@@ -9,12 +21,55 @@ function installKext() {
     sudo cp -Rf $1 /Library/Extensions
 }
 
-if [[ ! -e $1 ]]; then
-    echo "Usage: install_kext.sh {kext to install}"
-    echo "Example: install_kext.sh ~/Desktop/AppleHDAInjector.kext"
-    exit 1
+function check() {
+    kextName=$(basename $1)
+    for exception in $exceptions; do
+        if [[ "$kextName" == *"$exception"* ]]; then return 1; fi
+    done
+    return 0
+}
+
+if [[ ! -n $@ ]]; then showOptions; exit 1; fi
+
+while getopts n:ae:d:h option; do
+        case $option in
+            n)
+                named=$OPTARG
+            ;;
+            a)
+                all="YES"
+            ;;
+            e)
+                if [[ $(plutil $OPTARG) == *"OK"* ]]; then
+                    exceptions=$(grep -o '<string>.*</string>' $OPTARG | sed -e 's/<[^>]*>//g')
+                else
+                    exceptions=$OPTARG
+                fi
+            ;;
+            d)
+                directory=$OPTARG
+            ;;
+            h)
+                showOptions
+                exit 0
+            ;;
+            \?)
+                showOptions
+                exit 1
+            ;;
+        esac
+done
+
+if [[ ! -n $directory ]]; then directory=.; fi
+
+if [[ -n $all ]]; then
+    kexts=$($DIR/find_kext.sh -a -d $directory)
+else
+    kexts=$named
 fi
 
-for kext in $@; do
-    installKext $kext
+for kext in $kexts; do
+    if [[ ! -d $kext ]]; then kextError $kext; exit 1; fi
+    check $kext
+    if [[ $? -eq 0 ]]; then installKext $kext; fi
 done
