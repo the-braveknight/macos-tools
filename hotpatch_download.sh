@@ -13,11 +13,6 @@ function plistError() {
     echo "Error: Plist file corrupted or invalid."
 }
 
-function ssdtError() {
-    echo "Usage: hotpatch_download.sh -n {name of SSDT}"
-    echo "Example: hotpatch_download.sh -n SSDT-PNLF.dsl"
-}
-
 function download() {
 # $1: Output directory
 # $2: Hotpatch SSDT name
@@ -68,6 +63,6 @@ if [[ -n $plist ]]; then
     if [[ "$(plutil $plist)" != *"OK"* ]]; then plistError; exit 1; fi
     plistDownload $outputDirectory $plist
 else
-    if [[ ! -n $ssdt ]]; then ssdtError; exit 1; fi
+    if [[ ! -n $ssdt ]]; then showOptions; exit 1; fi
     download $outputDirectory $ssdt
 fi

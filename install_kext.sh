@@ -37,7 +37,7 @@ while getopts n:ae:d:h option; do
                 named=$OPTARG
             ;;
             a)
-                all="YES"
+                all=true
             ;;
             e)
                 if [[ $(plutil $OPTARG) == *"OK"* ]]; then
@@ -65,6 +65,7 @@ if [[ ! -n $directory ]]; then directory=.; fi
 if [[ -n $all ]]; then
     kexts=$($DIR/find_kext.sh -a -d $directory)
 else
+    if [[ ! -n $named ]]; then showOptions; exit 1; fi
     kexts=$named
 fi
 
