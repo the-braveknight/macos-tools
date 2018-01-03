@@ -2,6 +2,21 @@
 
 acpi_repo=https://github.com/RehabMan/OS-X-Clover-Laptop-Config/raw/master/hotpatch
 
+function showOptions() {
+    echo "-p,  Provide plist (array) with names of SSDTs."
+    echo "-n,  Provide name of SSDT file."
+    echo "-h,  Show this help message."
+}
+
+function plistError() {
+    echo "Error: Plist file corrupted or invalid."
+}
+
+function ssdtError() {
+    echo "Usage: hotpatch_download.sh -n {name of SSDT}"
+    echo "Example: hotpatch_download.sh -n SSDT-PNLF.dsl"
+}
+
 function download() {
 # $1: Output directory
 # $2: Hotpatch SSDT name
@@ -20,13 +35,31 @@ function plistDownload() {
     done
 }
 
-if [[ ! -e $1 ]]; then
-    echo "Usage: hotpatch_download.sh {plist file}"
-    echo "Example: hotpatch_download.sh ~/Desktop/Hotpatch.plist"
-    exit 1
-elif [[ $(plutil $1) != *"OK"* ]]; then
-    echo "Error: Plist file corrupt or invalid."
-    exit 1
-fi
+if [[ ! -n $@ ]]; then showOptions; exit 1; fi
 
-plistDownload $1
+while getopts n:p:h option; do
+    case $option in
+        n)
+            ssdt=$OPTARG
+        ;;
+        p)
+            plist=$OPTARG
+        ;;
+        h)
+            showOptions
+            exit 0
+        ;;
+        \?)
+            showOptions
+            exit 1
+        ;;
+    esac
+done
+
+if [[ -n $plist ]]; then
+    if [[ "$(plutil $plist)" != *"OK"* ]]; then plistError; exit 1; fi
+    plistDownload $plist
+else
+    if [[ ! -n $ssdt ]]; then ssdtError; exit 1; fi
+    download . $ssdt
+fi

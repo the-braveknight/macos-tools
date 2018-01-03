@@ -6,16 +6,41 @@ DIR=$(dirname $0)
 
 downloads_dir=Downloads
 
-if [[ ! -e $1 ]]; then
-    echo "Usage: install_downloads.sh {kext exceptions plist file}"
-    echo "Example: install_downloads.sh Exceptions.plist"
-    exit 1
-elif [[ $(plutil $1) != *"OK"* ]]; then
-    echo "Error: Plist file corrupt or invalid."
-    exit 1
-fi
+function showOptions() {
+    echo "-p,  Provide plist (array) of kext exceptions."
+    echo "-e,  Provide string of kext exceptions."
+    echo "-h,  Show this help message."
+}
 
-exceptions=$(/usr/libexec/PlistBuddy -c 'Print :' $1 2>&1 | sed 's/.* //' | tr -d '{}')
+function plistError() {
+    echo "Error: Plist file invalid or corrupted."
+}
+
+while getopts e:p:h option; do
+    case $option in
+        p)
+            plist=$OPTARG
+        ;;
+        e)
+            string=$OPTARG
+        ;;
+        h)
+            showOptions
+            exit 0
+        ;;
+        \?)
+            showOptions
+            exit 1
+        ;;
+    esac
+done
+
+if [[ -n $plist ]]; then
+    if [[ "$(plutil $plist)" != *"OK"* ]]; then plistError; exit 1; fi
+    exceptions=$(/usr/libexec/PlistBuddy -c 'Print :' $plist 2>&1 | sed 's/.* //' | tr -d '{}')
+elif [[ -n $string ]]; then
+    exceptions=$string
+fi
 
 function check() {
     for exception in $exceptions; do

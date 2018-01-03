@@ -1,5 +1,21 @@
 #!/bin/bash
 
+function showOptions() {
+    echo "-p,  Provide plist (array) with name/author pairs."
+    echo "-a,  Provide name of author."
+    echo "-n,  Provide name of repo (project)."
+    echo "-h,  Show this help menu."
+}
+
+function plistError() {
+    echo "Error: Plist file corrupted or invalid."
+}
+
+function inputError() {
+    echo "Usage: bitbucket_download.sh -n {name} -a {author}"
+    echo "Example: bitbucket_download.sh -a RehabMan -n os-x-fakesmc-kozlek"
+}
+
 function download() {
 # $1: Output directory
 # $2: Author
@@ -23,13 +39,34 @@ function plistDownload() {
     done
 }
 
-if [[ ! -e $1 ]]; then
-    echo "Usage: bitbucket_download.sh {plist file}"
-    echo "Example: bitbucket_download.sh ~/Desktop/Tools.plist"
-    exit 1
-elif [[ $(plutil $1) != *"OK"* ]]; then
-    echo "Error: Plist file corrupt or invalid."
-    exit 1
-fi
+if [[ ! -n $@ ]]; then showOptions; exit 1; fi
 
-plistDownload $1
+while getopts a:n:p:h option; do
+    case $option in
+    a)
+        author=$OPTARG
+    ;;
+    n)
+        name=$OPTARG
+    ;;
+    p)
+        plist=$OPTARG
+    ;;
+    h)
+        showOptions
+        exit 0
+    ;;
+    \?)
+        showOptions
+        exit 1
+    ;;
+    esac
+done
+
+if [[ -n $plist ]]; then
+    if [[ "$(plutil $plist)" != *"OK"* ]]; then plistError; exit 1; fi
+    plistDownload $plist
+else
+    if [[ ! -n $author || ! -n $name ]]; then inputError; exit 1; fi
+    download . $author $name
+fi
