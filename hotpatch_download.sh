@@ -3,14 +3,11 @@
 acpi_repo=https://github.com/RehabMan/OS-X-Clover-Laptop-Config/raw/master/hotpatch
 
 function showOptions() {
-    echo "-p,  Provide plist (array) with names of SSDTs."
-    echo "-n,  Provide name of SSDT file."
+    echo "-p,  Provide plist-array file of SSDTs to download."
     echo "-o,  Provide output directory."
     echo "-h,  Show this help message."
-}
-
-function plistError() {
-    echo "Error: Plist file corrupted or invalid."
+    echo "Usage: $(basename $0) [Options] [SSDTs to download]"
+    echo "Example: $(basename $0) [-o <output directory>] SSDT-IGPU.dsl SSDT-PNLF.dsl"
 }
 
 function download() {
@@ -21,27 +18,10 @@ function download() {
     curl --progress-bar --location $url --output $1/$2
 }
 
-function plistDownload() {
-# $1: Output directory
-# $2: Plist file
-    directory=$1/$(basename $2 .plist)
-    if [[ ! -d $directory ]]; then mkdir -p $directory; fi
-    for ((index=0; 1; index++)); do
-        ssdt=$(/usr/libexec/PlistBuddy -c "Print ':$index'" $2 2>&1)
-        if [[ "$ssdt" == *"Does Not Exist"* ]]; then break; fi
-        download $directory $ssdt
-    done
-}
-
-if [[ ! -n $@ ]]; then showOptions; exit 1; fi
-
-while getopts n:p:o:h option; do
+while getopts p:o:h option; do
     case $option in
-        n)
-            ssdt=$OPTARG
-        ;;
         p)
-            plist=$OPTARG
+            names=$(grep -o '<string>.*</string>' $OPTARG | sed -e 's/<[^>]*>//g')
         ;;
         o)
             outputDirectory=$OPTARG
@@ -50,19 +30,22 @@ while getopts n:p:o:h option; do
             showOptions
             exit 0
         ;;
-        \?)
-            showOptions
-            exit 1
-        ;;
     esac
 done
 
-if [[ ! -e $outputDirectory ]]; then outputDirectory=Downloads; fi
+shift $((OPTIND-1))
 
-if [[ -n $plist ]]; then
-    if [[ "$(plutil $plist)" != *"OK"* ]]; then plistError; exit 1; fi
-    plistDownload $outputDirectory $plist
+if [[ ! -d $outputDirectory ]]; then outputDirectory=.; fi
+
+if [[ $names ]]; then
+    ssdts=$names
+elif [[ $@ ]]; then
+    ssdts=$@
 else
-    if [[ ! -n $ssdt ]]; then showOptions; exit 1; fi
-    download $outputDirectory $ssdt
+    showOptions
+    exit 1
 fi
+
+for ssdt in $ssdts; do
+    download $outputDirectory $ssdt
+done

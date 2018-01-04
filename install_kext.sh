@@ -2,16 +2,12 @@
 
 DIR=$(dirname $0)
 
-function kextError() {
-    echo "Error: Cannot find $1. Please make sure you enter the correct path."
-}
-
 function showOptions() {
-    echo "-n,  Provide path of kext(s) to install."
-    echo "-a,  Install all kexts within current directory (or the directory chosen with -d)."
+    echo "-d,  Directory to install all kexts within."
     echo "-e,  Provide string (or plist-array file) of kext exceptions."
-    echo "-d,  Provide directory."
     echo "-h,  Show this help message."
+    echo "Usage: $(basename $0) [Options] [Kext(s) to install]"
+    echo "Example: $(basename $0) ~/Downloads/FakeSMC.kext"
 }
 
 function installKext() {
@@ -29,16 +25,8 @@ function check() {
     return 0
 }
 
-if [[ ! -n $@ ]]; then showOptions; exit 1; fi
-
-while getopts n:ae:d:h option; do
+while getopts e:d:h option; do
         case $option in
-            n)
-                named=$OPTARG
-            ;;
-            a)
-                all=true
-            ;;
             e)
                 if [[ $(plutil $OPTARG) == *"OK"* ]]; then
                     exceptions=$(grep -o '<string>.*</string>' $OPTARG | sed -e 's/<[^>]*>//g')
@@ -53,24 +41,25 @@ while getopts n:ae:d:h option; do
                 showOptions
                 exit 0
             ;;
-            \?)
-                showOptions
-                exit 1
-            ;;
         esac
 done
 
-if [[ ! -n $directory ]]; then directory=.; fi
+shift $((OPTIND-1))
 
-if [[ -n $all ]]; then
-    kexts=$($DIR/find_kext.sh -a -d $directory)
+if [[ $directory ]]; then
+    kexts=$($DIR/find_kext.sh -d $directory -a)
+elif [[ $@ ]]; then
+    kexts=$@
 else
-    if [[ ! -n $named ]]; then showOptions; exit 1; fi
-    kexts=$named
+    showOptions
+    exit 1
 fi
 
 for kext in $kexts; do
-    if [[ ! -d $kext ]]; then kextError $kext; exit 1; fi
+    if [[ ! -d $kext ]]; then
+        echo "Could not find $kext. Make sure the path is correct."
+        continue
+    fi
     check $kext
     if [[ $? -eq 0 ]]; then installKext $kext; fi
 done

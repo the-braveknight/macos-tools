@@ -1,10 +1,11 @@
 #!/bin/bash
 
-if [[ ! -e $1 ]]; then
-    echo "Usage: unarchive_file.sh {zip archive}"
-    echo "Example: unarchive_file.sh ~/Downloads/MyArchive.zip"
-    exit 1
-fi
+function showOptions() {
+    echo "-d,  Directory to unzip all archives within."
+    echo "-h,  Show this help message."
+    echo "Usage: $(basename $0) [Options] [Archives to unzip]"
+    echo "Example: $(basename $0) ~/Downloads/Files.zip ~/Downloads/Documents.zip"
+}
 
 function unarchive() {
     filePath=${1/.zip/}
@@ -13,6 +14,33 @@ function unarchive() {
     rm -Rf $filePath/__MACOSX
 }
 
-for zip in $@; do
+while getopts d:h option; do
+    case $option in
+        d)
+            directory=$OPTARG
+        ;;
+        h)
+            showOptions
+            exit 0
+        ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+if [[ $directory ]]; then
+    zips=$(find $directory -name *.zipp)
+elif [[ $@ ]]; then
+    zips=$@
+else
+    showOptions
+    exit 1
+fi
+
+for zip in $zips; do
+    if [[ ! -e $zip ]]; then
+        echo "Could not find $zip. Make sure the path is correct."
+        continue
+    fi
     unarchive $zip
 done

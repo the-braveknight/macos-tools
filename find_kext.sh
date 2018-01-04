@@ -1,15 +1,11 @@
 #!/bin/bash
 
 function showOptions() {
-    echo "-n,  Name of kext to search for."
-    echo "-d,  Directory to search in."
-    echo "-a,  Find all kexts within current directory (or the directory chosen with -d)."
+    echo "-d,  Directory to search in (Default is current directory)."
+    echo "-a,  Find all kexts within current directory (works with -d)."
     echo "-h,  Show this help message."
-}
-
-function inputError() {
-    echo "Usage: find_kext.sh -n {name} -d {directory}"
-    echo "Example: find_kext.sh -n FakeSMC.kext -d ~/Downloads/Kexts"
+    echo "Usage: $(basename $0) [Options] [Kext(s) to find]"
+    echo "Example: $(basename $0) -d ~/Downloads FakeSMC.kext"
 }
 
 function findKext() {
@@ -18,30 +14,34 @@ function findKext() {
     find $1 -path \*/$2 -not -path \*/PlugIns/* -not -path \*/Debug/*
 }
 
-while getopts n:d:ah option; do
+while getopts d:ah option; do
     case $option in
-        n)
-            name=$OPTARG
-        ;;
         d)
             directory=$OPTARG
         ;;
         a)
-            name=*.kext
+            all=*.kext
         ;;
         h)
             showOptions
             exit 0
         ;;
-        \?)
-            showOptions
-            exit 1
-        ;;
     esac
 done
 
-if [[ -d $directory ]]; then
-    findKext $directory "$name"
+shift $((OPTIND-1))
+
+if [[ ! -d $directory ]]; then directory=.; fi
+
+if [[ $all ]]; then
+    kexts=$all
+elif [[ $@ ]]; then
+    kexts=$@
 else
-    findKext . "$name"
+    showOptions
+    exit 1
 fi
+
+for kext in "$kexts"; do
+    findKext $directory "$kext"
+done
