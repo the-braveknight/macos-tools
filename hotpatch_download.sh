@@ -6,8 +6,8 @@ function showOptions() {
     echo "-p,  Provide plist-array file of SSDTs to download."
     echo "-o,  Provide output directory."
     echo "-h,  Show this help message."
-    echo "Usage: $(basename $0) [Options] [SSDTs to download]"
-    echo "Example: $(basename $0) [-o <output directory>] SSDT-IGPU.dsl SSDT-PNLF.dsl"
+    echo "Usage: $(basename $0) [-o <output directory>] [SSDTs to download]"
+    echo "Example: $(basename $0) -o ~/Downloads SSDT-IGPU.dsl SSDT-PNLF.dsl"
 }
 
 function download() {
@@ -22,6 +22,7 @@ while getopts p:o:h option; do
     case $option in
         p)
             names=$(grep -o '<string>.*</string>' $OPTARG | sed -e 's/<[^>]*>//g')
+            plist=$OPTARG
         ;;
         o)
             outputDirectory=$OPTARG

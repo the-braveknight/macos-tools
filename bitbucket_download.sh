@@ -10,10 +10,6 @@ function showOptions() {
     echo "Example: $(basename $0) -a RehabMan -n os-x-fakesmc-kozlek -o ~/Downloads"
 }
 
-function plistError() {
-    echo "Error: Plist file corrupted or invalid."
-}
-
 function download() {
 # $1: Output directory
 # $2: Author
@@ -29,13 +25,11 @@ function download() {
 function plistDownload() {
 # $1: Output directory
 # $2: Plist file
-    directory=$1/$(basename $2 .plist)
-    if [[ ! -d $directory ]]; then mkdir -p $directory; fi
     for ((index=0; 1; index++)); do
         author=$(/usr/libexec/PlistBuddy -c "Print ':$index:author'" $2 2>&1)
         name=$(/usr/libexec/PlistBuddy -c "Print ':$index:name'" $2 2>&1)
         if [[ "$author" == *"Does Not Exist"* ]]; then break; fi
-        download $directory $author $name
+        download $1 $author $name
     done
 }
 

@@ -29,7 +29,7 @@ done
 shift $((OPTIND-1))
 
 if [[ $directory ]]; then
-    zips=$(find $directory -name *.zipp)
+    zips=$(find $directory -name *.zip)
 elif [[ $@ ]]; then
     zips=$@
 else

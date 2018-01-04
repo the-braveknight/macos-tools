@@ -1,7 +1,5 @@
 #!/bin/bash
 
-DIR=$(dirname $0)
-
 function showOptions() {
     echo "-d,  Directory to install all apps within."
     echo "-h,  Show this help message."
