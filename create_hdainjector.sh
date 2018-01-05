@@ -13,6 +13,8 @@ function showOptions() {
     echo "-p,  Create PinConfigs injector. (XML layouts to be created and copied to native AppleHDA resources)"
     echo "-z,  Create .zml.zlib resources."
     echo "-h,  Show this help message."
+    echo "Usage: $(basename $0) [-c <Codec name>] [-r <HDA resources folder>] [-o <Output directory>]"
+    echo "Example: $(basename $0) -c CX20751 -r Resouces_CX20751"
 }
 
 function fixVersion() {
