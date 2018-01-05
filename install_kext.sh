@@ -1,7 +1,5 @@
 #!/bin/bash
 
-DIR=$(dirname $0)
-
 function showOptions() {
     echo "-d,  Directory to install all kexts within."
     echo "-e,  Provide string (or plist-array file) of kext exceptions."
@@ -47,7 +45,7 @@ done
 shift $((OPTIND-1))
 
 if [[ $directory ]]; then
-    kexts=$($DIR/find_kext.sh -d $directory -a)
+    kexts=$(find $directory -path \*.kext -not -path \*/PlugIns/* -not -path \*/Debug/*)
 elif [[ $@ ]]; then
     kexts=$@
 else
