@@ -2,7 +2,7 @@
 
 function showOptions() {
     echo "-d,  Directory to install all kexts within."
-    echo "-e,  Provide string (or plist-array file) of kext exceptions."
+    echo "-e,  Kexts exceptions (single string)."
     echo "-h,  Show this help message."
     echo "Usage: $(basename $0) [Options] [Kext(s) to install]"
     echo "Example: $(basename $0) ~/Downloads/FakeSMC.kext"
@@ -26,11 +26,7 @@ function check() {
 while getopts e:d:h option; do
         case $option in
             e)
-                if [[ $(plutil $OPTARG) == *"OK"* ]]; then
-                    exceptions=$(grep -o '<string>.*</string>' $OPTARG | sed -e 's/<[^>]*>//g')
-                else
-                    exceptions=$OPTARG
-                fi
+                exceptions=$OPTARG
             ;;
             d)
                 directory=$OPTARG
