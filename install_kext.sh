@@ -19,7 +19,7 @@ function installKext() {
 
 function check() {
     kextName=$(basename $1)
-    if [[ $(echo $1 | grep -vE "$exceptions") ]]; then echo 1; fi
+    if [[ -z $exceptions || $(echo $1 | grep -vE $exceptions) ]]; then echo 1; fi
 }
 
 while getopts e:d:h option; do
