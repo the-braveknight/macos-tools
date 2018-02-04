@@ -22,7 +22,7 @@ function installKext() {
 
 function check() {
     kextName=$(basename $1)
-    if [[ $(echo $1 | grep -vE "$exceptions") ]]; then echo 1; fi
+    if [[ -z $exceptions || $(echo $1 | grep -vE "$exceptions") ]]; then echo 1; fi
 }
 
 while getopts e:id:h option; do
@@ -32,7 +32,7 @@ while getopts e:id:h option; do
             ;;
             i)
                 EFI=$($DIR/mount_efi.sh)
-                kexts_dir=$EFI/EFI/Clover/kexts/Other
+                kexts_dir=$EFI/EFI/CLOVER/kexts/Other
             ;;
             d)
                 directory=$OPTARG
