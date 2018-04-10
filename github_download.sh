@@ -19,7 +19,7 @@ function download_latest()
 # $3 is partial file name to look for
 # $4 is file name to rename to
 {
-    echo "downloading latest $4 from $2:"
+    echo "Downloading $(basename $4) from $2"
     curl $curl_options_silent --output /tmp/org.rehabman.download.txt "$2"
     local scrape=`grep -o -m 1 "/.*$3.*\.zip" /tmp/org.rehabman.download.txt`
     local url=$1$scrape
