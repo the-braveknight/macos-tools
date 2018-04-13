@@ -20,7 +20,7 @@ function download() {
 while getopts o:h option; do
     case $option in
         o)
-            outputDirectory=$OPTARG
+            output_directory=$OPTARG
         ;;
         h)
             showOptions
@@ -31,7 +31,7 @@ done
 
 shift $((OPTIND-1))
 
-if [[ ! -d $outputDirectory ]]; then outputDirectory=.; fi
+if [[ ! -d $output_directory ]]; then output_directory=.; fi
 
 if [[ $@ ]]; then
     ssdts=$@
@@ -41,5 +41,5 @@ else
 fi
 
 for ssdt in $ssdts; do
-    download $outputDirectory $ssdt
+    download $output_directory $ssdt
 done
