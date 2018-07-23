@@ -16,7 +16,21 @@ function download() {
 # $3: Partial file name to look for ("RELEASE", "DEBUG", etc.)
 # $4: Output directory
     curl --silent --location "https://github.com/$1/$2/releases" --output "/tmp/org.$1.download.txt"
-    scrape=$(grep -o -m 1 "/.*$3.*\.zip" "/tmp/org.$1.download.txt")
+    filename_matched=$(grep -o -m 1 "/.*$3.*\.zip" "/tmp/org.$1.download.txt")
+    reponame_matched=$(grep -o -m 1 "/.*$2.*\.zip" "/tmp/org.$1.download.txt")
+    release=$(grep -o -m 1 "/.RELEASE.*\.zip" "/tmp/org.$1.download.txt")
+    debug=$(grep -o -m 1 "/.*DEBUG.*\.zip" "/tmp/org.$1.download.txt")
+    if [[ -n "$filename_matched" ]]; then
+        scrape=$filename_matched
+    elif [[ -n "$reponame_matched" ]]; then
+        scrape=$reponame_matched
+    elif [[ -n "$release" ]]; then
+        scrape=$release
+    elif [[ -n "$debug" ]]; then
+        scrape=$debug
+    else
+        return 1
+    fi
     fileName="$1-$2.zip"
     echo Downloading $fileName
     curl --progress-bar --location https://github.com/$scrape --output $4/$fileName
