@@ -9,9 +9,9 @@ function showOptions() {
 
 function installBinary() {
     fileName=$(basename $1)
-    echo Installing $fileName to /usr/bin
-    sudo rm -Rf /usr/bin/$fileName
-    sudo cp -Rf $1 /usr/bin
+    echo Installing $fileName to /usr/local/bin
+    sudo rm -f /usr/bin/$fileName /usr/local/bin/$fileName
+    sudo cp -f $1 /usr/local/bin
 }
 
 while getopts d:h option; do
