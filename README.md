@@ -1,5 +1,6 @@
 # macOS-Tools
-Useful macOS tools &amp; scripts to download & install kernel extensions.
+Useful macOS tools and scripts to download & install apps, tools, and kernel extensions.
 
-### Requirements:
-- settings.plist file (see settings-sample.plist)
+### Credits:
+- zlib: RevoGirl
+- RehabMan: AppleHDA patching scripts
