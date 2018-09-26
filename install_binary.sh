@@ -18,7 +18,7 @@ function installBinary() {
     echo Installing $fileName to $binaries_dest
     sudo rm -f $(which $fileName)
     sudo cp -f $1 $binaries_dest
-    addInstalledElement "Binaries" "$binaries_dest/$fileName"
+    addInstalledElement "Binaries" "$fileName"
 }
 
 while getopts d:h option; do

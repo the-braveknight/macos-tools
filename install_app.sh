@@ -18,7 +18,7 @@ function installApp() {
     echo Installing $appName to $app_dest
     sudo rm -Rf $app_dest/$appName
     cp -Rf $1 $app_dest
-    addInstalledElement "Apps" "$app_dest/$appName"
+    addInstalledElement "Apps" "$appName"
 }
 
 while getopts d:h option; do
