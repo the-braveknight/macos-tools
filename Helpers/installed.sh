@@ -2,7 +2,7 @@
 
 tbk=~/Library/the-braveknight
 if [[ ! -d $tbk ]]; then mkdir $tbk; fi
-installed=$tbk/Installed.plist
+installed=$tbk/org.the-braveknight.installed.plist
 
 function printInstalledElements() {
 # $1: Array name (key) in root dictionary plist
