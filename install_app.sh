@@ -1,5 +1,11 @@
 #!/bin/bash
 
+DIR=$(dirname $0)
+
+source $DIR/Helpers/installed.sh
+
+app_dest=/Applications
+
 function showOptions() {
     echo "-d,  Directory to install all apps within."
     echo "-h,  Show this help message."
@@ -9,9 +15,10 @@ function showOptions() {
 
 function installApp() {
     appName=$(basename $1)
-    echo Installing $appName to /Applications
-    sudo rm -Rf /Applications/$appName
-    cp -Rf $1 /Applications
+    echo Installing $appName to $app_dest
+    sudo rm -Rf $app_dest/$appName
+    cp -Rf $1 $app_dest
+    addInstalledElement "Apps" "$app_dest/$appName"
 }
 
 while getopts d:h option; do

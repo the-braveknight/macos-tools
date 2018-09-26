@@ -31,13 +31,13 @@ function createZMLResources() {
     rm -Rf $zml_resources && mkdir $zml_resources
 
     for layout in $2/layout*.plist; do
-        $DIR/Tools/zlib deflate $layout > $zml_resources/$(basename $layout .plist).zml.zlib
+        $DIR/Helpers/zlib deflate $layout > $zml_resources/$(basename $layout .plist).zml.zlib
     done
 
-    $DIR/Tools/zlib inflate $hda_native/Contents/Resources/Platforms.xml.zlib > /tmp/Platforms.plist
+    $DIR/Helpers/zlib inflate $hda_native/Contents/Resources/Platforms.xml.zlib > /tmp/Platforms.plist
     /usr/libexec/PlistBuddy -c "Delete ':PathMaps'" /tmp/Platforms.plist
     /usr/libexec/PlistBuddy -c "Merge $2/Platforms.plist" /tmp/Platforms.plist
-    $DIR/Tools/zlib deflate /tmp/Platforms.plist > $zml_resources/Platforms.zml.zlib
+    $DIR/Helpers/zlib deflate /tmp/Platforms.plist > $zml_resources/Platforms.zml.zlib
 }
 
 function createXMLInjector() {
@@ -57,13 +57,13 @@ function createXMLInjector() {
     fixVersion ":CFBundleShortVersionString" $hda_injector/Contents/Info.plist
 
     for layout in $2/layout*.plist; do
-        $DIR/Tools/zlib deflate $layout > $hda_injector/Contents/Resources/$(basename $layout .plist).xml.zlib
+        $DIR/Helpers/zlib deflate $layout > $hda_injector/Contents/Resources/$(basename $layout .plist).xml.zlib
     done
 
-    $DIR/Tools/zlib inflate $hda_native/Contents/Resources/Platforms.xml.zlib > /tmp/Platforms.plist
+    $DIR/Helpers/zlib inflate $hda_native/Contents/Resources/Platforms.xml.zlib > /tmp/Platforms.plist
     /usr/libexec/PlistBuddy -c "Delete ':PathMaps'" /tmp/Platforms.plist
     /usr/libexec/PlistBuddy -c "Merge $2/Platforms.plist" /tmp/Platforms.plist
-    $DIR/Tools/zlib deflate /tmp/Platforms.plist > $hda_injector/Contents/Resources/Platforms.xml.zlib
+    $DIR/Helpers/zlib deflate /tmp/Platforms.plist > $hda_injector/Contents/Resources/Platforms.xml.zlib
 }
 
 function createHCDInjector() {

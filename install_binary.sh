@@ -1,5 +1,11 @@
 #!/bin/bash
 
+DIR=$(dirname $0)
+
+source $DIR/Helpers/installed.sh
+
+binaries_dest=/usr/local/bin
+
 function showOptions() {
     echo "-d,  Directory to install all binaries within."
     echo "-h,  Show this help message."
@@ -9,9 +15,10 @@ function showOptions() {
 
 function installBinary() {
     fileName=$(basename $1)
-    echo Installing $fileName to /usr/local/bin
-    sudo rm -f /usr/bin/$fileName /usr/local/bin/$fileName
-    sudo cp -f $1 /usr/local/bin
+    echo Installing $fileName to $binaries_dest
+    sudo rm -f $(which $fileName)
+    sudo cp -f $1 $binaries_dest
+    addInstalledElement "Binaries" "$binaries_dest/$fileName"
 }
 
 while getopts d:h option; do
