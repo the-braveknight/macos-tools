@@ -8,6 +8,13 @@ function printValue() {
     $PlistBuddy -c "Print $1" "$2"
 }
 
+function printObject() {
+# For dictionaries and arrays
+# $1: Dictionary name
+# $2: Source plist file
+    $PlistBuddy -x -c "Print '$1'" $2
+}
+
 function printArrayItems() {
 # $1: Array name (key) in root dictionary plist
 # $2: Plist file

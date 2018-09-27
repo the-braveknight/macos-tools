@@ -21,10 +21,7 @@ while getopts d:h option; do
     esac
 done
 
-if [[ ! -d $directory ]]; then
-    showOptions
-    exit 1
-fi
+if [[ ! -d $directory ]]; then showOptions; exit 1; fi
 
 for kext in $directory/*.kext; do
     if [[ ! -d $kext/Contents/_CodeSignature && ! -d $kext/_CodeSignature ]]; then

@@ -2,6 +2,8 @@
 
 DIR=$(dirname $0)
 
+source $DIR/_plist_utils.sh
+
 EFI=$($DIR/mount_efi.sh)
 current_plist=$EFI/EFI/Clover/config.plist
 
@@ -15,17 +17,17 @@ function showOptions() {
 function replaceVar() {
 # $1: Property key
 # $2: New config.plist
-    value=$(/usr/libexec/plistbuddy -c "Print '$1'" $2)
-    /usr/libexec/plistbuddy -c "Set '$1' '$value'" $current_plist
+    value=$(printValue "$1" $2)
+    setValue "$1" "$value" $current_plist
 }
 
 function replaceDict() {
 # $1: Property key
 # $2: New config.plist
-    /usr/libexec/plistbuddy -x -c "Print '$1'" $2 > /tmp/org_rehabman_node.plist
-    /usr/libexec/plistbuddy -c "Delete '$1'" $current_plist
-    /usr/libexec/plistbuddy -c "Add '$1' dict" $current_plist
-    /usr/libexec/plistbuddy -c "Merge /tmp/org_rehabman_node.plist '$1'" $current_plist
+    printObject "$1" $2 > /tmp/org_rehabman_node.plist
+    delete "$1" $current_plist
+    addDictionary "$1" $current_plist
+    mergePlist /tmp/org_rehabman_node.plist "$1" $current_plist
 }
 
 function replaceConfig() {

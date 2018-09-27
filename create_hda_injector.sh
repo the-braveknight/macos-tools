@@ -1,13 +1,13 @@
 #!/bin/bash
 
-#set -x
-
 DIR=$(dirname $0)
 
 source $DIR/_plist_utils.sh
 
 native_hda=/System/Library/Extensions/AppleHDA.kext
 native_hcd=$native_hda/Contents/PlugIns/AppleHDAHardwareConfigDriver.kext
+
+output_directory=.
 
 function showOptions() {
     echo "-c,  Codec name."
@@ -44,8 +44,8 @@ function createHDAInjector() {
     done
 
     $DIR/zlib inflate $native_hda/Contents/Resources/Platforms.xml.zlib > /tmp/Platforms.plist
-    /usr/libexec/PlistBuddy -c "Delete ':PathMaps'" /tmp/Platforms.plist
-    /usr/libexec/PlistBuddy -c "Merge $2/Platforms.plist" /tmp/Platforms.plist
+    delete "PathMaps" /tmp/Platforms.plist
+    mergePlist "$2/Platforms.plist" ":" /tmp/Platforms.plist
     $DIR/zlib deflate /tmp/Platforms.plist > $hda_injector/Contents/Resources/Platforms.xml.zlib
 
     addDictionary "HardwareConfigDriver_Temp" $hda_injector/Contents/Info.plist
@@ -67,7 +67,7 @@ while getopts c:r:o:h option; do
         resources=$OPTARG
         ;;
         o)
-        directory=$OPTARG
+        output_directory=$OPTARG
         ;;
         h)
             showOptions
@@ -78,6 +78,6 @@ done
 
 if [[ ! -n $codec || ! -d $resources ]]; then showOptions; exit 1; fi
 
-if [[ ! -d $directory ]]; then directory=.; fi
+if [[ ! -d $output_directory ]]; then showOptions; exit 1; fi
 
-createHDAInjector $codec $resources $directory
+createHDAInjector $codec $resources $output_directory
