@@ -2,6 +2,6 @@
 
 DIR=$(dirname $0)
 
-source $DIR/Helpers/installed.sh
+source $DIR/_installed.sh
 
-printInstalledElements "Binaries"
+printInstalledItems "Binaries"

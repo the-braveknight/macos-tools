@@ -2,7 +2,7 @@
 
 DIR=$(dirname $0)
 
-source $DIR/Helpers/installed.sh
+source $DIR/_installed.sh
 
 app_dest=/Applications
 
@@ -18,7 +18,7 @@ function installApp() {
     echo Installing $appName to $app_dest
     sudo rm -Rf $app_dest/$appName
     cp -Rf $1 $app_dest
-    addInstalledElement "Apps" "$appName"
+    addInstalledItem "Apps" "$appName"
 }
 
 while getopts d:h option; do

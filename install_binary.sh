@@ -2,7 +2,7 @@
 
 DIR=$(dirname $0)
 
-source $DIR/Helpers/installed.sh
+source $DIR/_installed.sh
 
 binaries_dest=/usr/local/bin
 
@@ -18,7 +18,7 @@ function installBinary() {
     echo Installing $fileName to $binaries_dest
     sudo rm -f $(which $fileName)
     sudo cp -f $1 $binaries_dest
-    addInstalledElement "Binaries" "$fileName"
+    addInstalledItem "Binaries" "$fileName"
 }
 
 while getopts d:h option; do

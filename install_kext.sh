@@ -2,7 +2,7 @@
 
 DIR=$(dirname $0)
 
-source $DIR/Helpers/installed.sh
+source $DIR/_installed.sh
 
 kexts_dest=/Library/Extensions
 
@@ -20,7 +20,7 @@ function installKext() {
     echo Installing $kextName to $kexts_dest
     sudo rm -Rf $kexts_dest/$kextName
     sudo cp -Rf $1 $kexts_dest
-    addInstalledElement "Kexts" "$kextName"
+    addInstalledItem "Kexts" "$kextName"
 }
 
 function check() {
