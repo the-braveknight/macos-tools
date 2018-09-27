@@ -5,11 +5,11 @@
 function printArrayItems() {
 # $1: Array name (key) in root dictionary plist
     for ((index=0; 1; index++)); do
-        kext=$(/usr/libexec/PlistBuddy -c "Print :$1:$index" $plist 2>&1)
-        if [[ "$kext" == *"Does Not Exist"* ]]; then
+        item=$(printValue "$1:$index" 2>&1)
+        if [[ "$item" == *"Does Not Exist"* ]]; then
             break
         fi
-        echo $kext
+        echo $item
     done
 }
 
