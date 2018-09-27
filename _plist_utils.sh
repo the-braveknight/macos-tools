@@ -5,14 +5,14 @@ PlistBuddy=/usr/libexec/PlistBuddy
 function printValue() {
 # $1: Key name
 # $2: Plist file
-    $PlistBuddy -c "Print $1" "$2"
+    $PlistBuddy -c "Print '$1'" "$2"
 }
 
 function printObject() {
 # For dictionaries and arrays
 # $1: Dictionary name
 # $2: Source plist file
-    $PlistBuddy -x -c "Print '$1'" $2
+    $PlistBuddy -x -c "Print '$1'" "$2"
 }
 
 function printArrayItems() {
@@ -20,9 +20,7 @@ function printArrayItems() {
 # $2: Plist file
     for ((index=0; 1; index++)); do
         item=$(printValue "$1:$index" "$2" 2>&1)
-        if [[ "$item" == *"Does Not Exist"* ]]; then
-            break
-        fi
+        if [[ "$item" == *"Does Not Exist"* ]]; then break; fi
         echo $item
     done
 }
@@ -94,12 +92,6 @@ function append() {
 # $2: Value type
 # $3: Value
 # $4: Plist file
-    for element in $(printArrayItems "$1"); do
-        if [[ "$element" == "$3" ]]; then
-            return
-        fi
-    done
-    addArray "$1"
     add "$1:0" "$2" "$3" "$4"
 }
 

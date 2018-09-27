@@ -16,5 +16,9 @@ function printInstalledItems() {
 function addInstalledItem() {
 # $1: Array name (key) in root dictionary plist
 # $2: Element
+    for item in $(printInstalledItems "$1"); do
+        if [[ "$item" == "$2" ]]; then return; fi
+    done
+    addArray "$1" "$plist"
     appendArrayWithString "$1" "$2" "$plist"
 }
