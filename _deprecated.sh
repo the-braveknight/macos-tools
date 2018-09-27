@@ -8,5 +8,5 @@ plist=$DIR/org.the-braveknight.deprecated.plist
 
 function printDeprecatedItems() {
 # $1: Array name (key) in root dictionary plist
-    printArrayItems "$1"
+    printArrayItems "$1" "$plist"
 }
