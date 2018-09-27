@@ -24,7 +24,7 @@ function setValue() {
 # $1: Key name
 # $2: Value
 # $3: Plist file
-    $PlistBuddy -c "Set $1 '$2'" "$3" &> /dev/null
+    $PlistBuddy -c "Set '$1' '$2'" "$3" &> /dev/null
 }
 
 function add() {
@@ -32,7 +32,7 @@ function add() {
 # $2: Value type
 # $3: Value
 # $4: Plist file
-    $PlistBuddy -c "Add $1 '$2'" "$4" &> /dev/null
+    $PlistBuddy -c "Add '$1' $2" "$4" &> /dev/null
     setValue "$1" "$3" "$4"
 }
 
@@ -40,6 +40,12 @@ function addArray() {
 # $1: Array name
 # $2: Plist file
     $PlistBuddy -c "Add $1 Array" "$2" &> /dev/null
+}
+
+function addDictionary() {
+# $1: Dictionary name
+# $2: Plist file
+    $PlistBuddy -c "Add $1 Dict" "$2" &> /dev/null
 }
 
 function addString() {
@@ -64,8 +70,16 @@ function delete() {
 
 function mergePlist() {
 # $1: Plist to be merged
-# $2: Parent plist to be merged into
-    $PlistBuddy -c "Merge $1" "$2"
+# $2: New key in address
+# $3: Parent plist to be merged into
+    $PlistBuddy -c "Merge $1 '$2'" "$3"
+}
+
+function copy() {
+# $1: Key to copy
+# $2: Destination key
+# $3: Plist file
+    $PlistBuddy -c "Copy '$1' '$2'" "$3"
 }
 
 function append() {

@@ -1,0 +1,83 @@
+#!/bin/bash
+
+#set -x
+
+DIR=$(dirname $0)
+
+source $DIR/_plist_utils.sh
+
+native_hda=/System/Library/Extensions/AppleHDA.kext
+native_hcd=$native_hda/Contents/PlugIns/AppleHDAHardwareConfigDriver.kext
+
+function showOptions() {
+    echo "-c,  Codec name."
+    echo "-r,  Codec resources folder."
+    echo "-o,  Output directory."
+    echo "Usage: $(basename $0) [-c <Codec name>] [-r <HDA resources folder>] [-o <Output directory>]"
+    echo "Example: $(basename $0) -c ALC235 -r Resouces_ALC235"
+}
+
+function fixVersion() {
+# $1: Version property key
+# $2: Plist file
+    oldValue=$(printValue "$1" $2)
+    newValue=$(echo $oldValue | perl -p -e 's/(\d*\.\d*(\.\d*)?)/9\1/')
+    setValue "$1" "$newValue" $2
+}
+
+function createHDAInjector() {
+# $1: Codec name
+# $2: Resources folder
+# $3: Output directory
+    hda_injector=$3/AppleHDA_$1.kext
+    rm -Rf $hda_injector && mkdir -p $hda_injector/Contents/Resources && mkdir -p $hda_injector/Contents/MacOS
+    ln -s $native_hda/Contents/MacOS/AppleHDA $hda_injector/Contents/MacOS/AppleHDA
+    cp $native_hda/Contents/Info.plist $hda_injector/Contents/Info.plist
+
+    fixVersion ":NSHumanReadableCopyright" $hda_injector/Contents/Info.plist
+    fixVersion ":CFBundleVersion" $hda_injector/Contents/Info.plist
+    fixVersion ":CFBundleGetInfoString" $hda_injector/Contents/Info.plist
+    fixVersion ":CFBundleShortVersionString" $hda_injector/Contents/Info.plist
+
+    for layout in $2/layout*.plist; do
+        $DIR/zlib deflate $layout > $hda_injector/Contents/Resources/$(basename $layout .plist).xml.zlib
+    done
+
+    $DIR/zlib inflate $native_hda/Contents/Resources/Platforms.xml.zlib > /tmp/Platforms.plist
+    /usr/libexec/PlistBuddy -c "Delete ':PathMaps'" /tmp/Platforms.plist
+    /usr/libexec/PlistBuddy -c "Merge $2/Platforms.plist" /tmp/Platforms.plist
+    $DIR/zlib deflate /tmp/Platforms.plist > $hda_injector/Contents/Resources/Platforms.xml.zlib
+
+    addDictionary "HardwareConfigDriver_Temp" $hda_injector/Contents/Info.plist
+    mergePlist "$native_hcd/Contents/Info.plist" "HardwareConfigDriver_Temp" $hda_injector/Contents/Info.plist
+    copy ":HardwareConfigDriver_Temp:IOKitPersonalities:HDA Hardware Config Resource" ":IOKitPersonalities:HDA Hardware Config Resource" $hda_injector/Contents/Info.plist
+    delete "HardwareConfigDriver_Temp" $hda_injector/Contents/Info.plist
+    delete "IOKitPersonalities:HDA Hardware Config Resource:HDAConfigDefault" $hda_injector/Contents/Info.plist
+    delete "IOKitPersonalities:HDA Hardware Config Resource:PostConstructionInitialization" $hda_injector/Contents/Info.plist
+    addInteger "IOKitPersonalities:HDA Hardware Config Resource:IOProbeScore" 2000 $hda_injector/Contents/Info.plist
+    mergePlist "$2/ahhcd.plist" "IOKitPersonalities:HDA Hardware Config Resource" $hda_injector/Contents/Info.plist
+}
+
+while getopts c:r:o:h option; do
+    case $option in
+        c)
+        codec=$OPTARG
+        ;;
+        r)
+        resources=$OPTARG
+        ;;
+        o)
+        directory=$OPTARG
+        ;;
+        h)
+            showOptions
+            exit 0
+        ;;
+    esac
+done
+
+if [[ ! -n $codec || ! -d $resources ]]; then showOptions; exit 1; fi
+
+if [[ ! -d $directory ]]; then directory=.; fi
+
+createHDAInjector $codec $resources $directory
