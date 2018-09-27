@@ -1,11 +1,18 @@
 #!/bin/bash
 
-# Assume plist file is $plist
+PlistBuddy=/usr/libexec/PlistBuddy
+
+function printValue() {
+# $1: Key name
+# $2: Plist file
+    $PlistBuddy -c "Print $1" "$2"
+}
 
 function printArrayItems() {
 # $1: Array name (key) in root dictionary plist
+# $2: Plist file
     for ((index=0; 1; index++)); do
-        item=$(printValue "$1:$index" 2>&1)
+        item=$(printValue "$1:$index" "$2" 2>&1)
         if [[ "$item" == *"Does Not Exist"* ]]; then
             break
         fi
@@ -13,49 +20,78 @@ function printArrayItems() {
     done
 }
 
-function addArray() {
-    /usr/libexec/PlistBuddy -c "Add $1 Array" $plist &> /dev/null
+function setValue() {
+# $1: Key name
+# $2: Value
+# $3: Plist file
+    $PlistBuddy -c "Set $1 '$2'" "$3" &> /dev/null
 }
 
-function addDictionary() {
-    /usr/libexec/PlistBuddy -c "Add $1 Dict" $plist &> /dev/null
+function add() {
+# $1: Item name (key)
+# $2: Value type
+# $3: Value
+# $4: Plist file
+    $PlistBuddy -c "Add $1 '$2'" "$4" &> /dev/null
+    setValue "$1" "$3" "$4"
+}
+
+function addArray() {
+# $1: Array name
+# $2: Plist file
+    $PlistBuddy -c "Add $1 Array" "$2" &> /dev/null
 }
 
 function addString() {
-    /usr/libexec/PlistBuddy -c "Add $1 String" $plist &> /dev/null
+# $1: String name
+# $2: String value
+# $3: Plist file
+    add "$1" "String" "$2" "$3"
 }
 
 function addInteger() {
-    /usr/libexec/PlistBuddy -c "Add $1 Integer" $plist &> /dev/null
+# $1: Integer name
+# $2: Integer value
+# $3: Plist file
+    add "$1" "Integer" "$2" "$3"
 }
 
-function setValue() {
-    /usr/libexec/PlistBuddy -c "Set $1 '$2'" $plist &> /dev/null
+function delete() {
+# $1: Key name
+# $2: Plist file
+    $PlistBuddy -c "Delete '$1'" "$2"
 }
 
-function printValue() {
-    /usr/libexec/PlistBuddy -c "Print $1" $plist
+function mergePlist() {
+# $1: Plist to be merged
+# $2: Parent plist to be merged into
+    $PlistBuddy -c "Merge $1" "$2"
 }
 
 function append() {
 # $1: Array name (key) in root dictionary plist
 # $2: Value type
 # $3: Value
+# $4: Plist file
     for element in $(printArrayItems "$1"); do
-        if [[ "$element" == "$3" ]]; then return; fi
+        if [[ "$element" == "$3" ]]; then
+            return
+        fi
     done
     addArray "$1"
-    /usr/libexec/PlistBuddy -c "Add :$1:0 $2 '$3'" $plist &> /dev/null
+    add "$1:0" "$2" "$3" "$4"
 }
 
 function appendArrayWithString() {
 # $1: Array name (key) in root dictionary plist
 # $2: String value
-    append "$1" "String" "$2"
+# $3: Plist file
+    append "$1" "String" "$2" "$3"
 }
 
 function appendArrayWithInteger() {
 # $1: Array name (key) in root dictionary plist
 # $2: Integer value
-    append "$1" "Integer" "$2"
+# $3: Plist file
+    append "$1" "Integer" "$2" "$3"
 }

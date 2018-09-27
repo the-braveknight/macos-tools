@@ -10,11 +10,11 @@ plist=$tbk/org.the-braveknight.installed.plist
 
 function printInstalledItems() {
 # $1: Array name (key) in root dictionary plist
-    printArrayItems "$1"
+    printArrayItems "$1" "$plist"
 }
 
 function addInstalledItem() {
 # $1: Array name (key) in root dictionary plist
 # $2: Element
-    appendArrayWithString "$1" "$2"
+    appendArrayWithString "$1" "$2" "$plist"
 }
