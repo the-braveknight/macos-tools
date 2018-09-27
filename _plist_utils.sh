@@ -16,7 +16,7 @@ function printItems() {
 function addItem() {
 # $1: Array name (key) in root dictionary plist
 # $2: Element
-    for element in $(printInstalledItems $1); do
+    for element in $(printItems $1); do
         if [[ "$element" == "$2" ]]; then return; fi
     done
 
