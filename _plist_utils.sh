@@ -21,6 +21,7 @@ function printArrayItems() {
     for ((index=0; $? == 0; index++)); do
         printValue "$1:$index" "$2" 2> /dev/null
     done
+    return 0
 }
 
 function setValue() {
