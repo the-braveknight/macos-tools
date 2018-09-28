@@ -18,10 +18,8 @@ function printObject() {
 function printArrayItems() {
 # $1: Array name (key) in root dictionary plist
 # $2: Plist file
-    for ((index=0; 1; index++)); do
-        item=$(printValue "$1:$index" "$2" 2>&1)
-        if [[ "$item" == *"Does Not Exist"* ]]; then break; fi
-        echo $item
+    for ((index=0; $? == 0; index++)); do
+        printValue "$1:$index" "$2" 2> /dev/null
     done
 }
 
