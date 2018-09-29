@@ -5,12 +5,12 @@ DIR=$(dirname ${BASH_SOURCE[0]})
 source $DIR/_install_cmds.sh
 
 function showOptions() {
-    echo "-d,  Directory to install all apps within."
-    echo "-s,  Destination directory (default: $apps_dest)."
-    echo "-e,  Exceptions list (single string) when installing multiple apps."
+    echo "-d,  Directory to install all tools within."
+    echo "-s,  Destination directory (default: $tools_dest)."
+    echo "-e,  Exceptions list (single string) when installing multiple tools."
     echo "-h,  Show this help message."
-    echo "Usage: $(basename $0) [Options] [App to install]"
-    echo "Example: $(basename $0) ~/Downloads/VLC.app"
+    echo "Usage: $(basename $0) [Options] [Tool to install]"
+    echo "Example: $(basename $0) ~/Downloads/mount_efi.sh"
 }
 
 while getopts e:s:d:h option; do
@@ -19,7 +19,7 @@ while getopts e:s:d:h option; do
             exceptions=$OPTARG
         ;;
         s)
-            apps_dest=$OPTARG
+            tools_dest=$OPTARG
         ;;
         d)
             directory=$OPTARG
@@ -34,9 +34,9 @@ done
 shift $((OPTIND-1))
 
 if [[ -d "$directory" ]]; then
-    installAppsInDirectory "$directory" "$apps_dest" "$exceptions"
-elif [[ -d "$1" ]]; then
-    installApp "$1"
+    installToolsInDirectory "$directory" "$tools_dest" "$exceptions"
+elif [[ -e "$1" ]]; then
+    installTool "$1"
 else
     showOptions
     exit 1

@@ -107,3 +107,21 @@ function appendArrayWithInteger() {
 # $3: Plist file
     append "$1" "Integer" "$2" "$3"
 }
+
+function replaceVar() {
+# $1: Variable key
+# $2: Original plist file
+# $3: New plist file
+    value=$(printValue "$1" "$3")
+    setValue "$1" "$value" "$2"
+}
+
+function replaceDict() {
+# $1: Dictionary key
+# $2: Original plist file
+# $3: New plist file
+    printObject "$1" "$3" > /tmp/org.the-braveknight.node.plist
+    delete "$1" "$2"
+    addDictionary "$1" "$2"
+    mergePlist /tmp/org.the-braveknight.node.plist "$1" "$2"
+}

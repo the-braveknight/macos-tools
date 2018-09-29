@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIR=$(dirname $0)
+DIR=$(dirname ${BASH_SOURCE[0]})
 
 source $DIR/_installed.sh
 
