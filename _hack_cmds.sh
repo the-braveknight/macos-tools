@@ -62,9 +62,9 @@ case "$1" in
     ;;
     --install-kexts)
         unarchiveAllInDirectory "$downloads_dir"
+        createHDAInjector "$hda_codec" "Resources_$hda_codec" "$local_kexts_dir"
         installKextsInDirectory "$downloads_dir" "$exceptions"
-        $0 --install-hdainjector
-        $0 --install-backlightinjector
+        installKextsInDirectory "$local_kexts_dir"
     ;;
     --install-essential-kexts)
         unarchiveAllInDirectory "$downloads_dir"
@@ -74,13 +74,6 @@ case "$1" in
         for kext in $($DIR/essential_kexts.sh); do
             installKext $(findKext "$kext" "$downloads_dir" "$local_kexts_dir") "$efi_kext_dest"
         done
-    ;;
-    --install-hdainjector)
-        createHDAInjector "$hda_codec" "Resources_$hda_codec" "$local_kexts_dir"
-        installKext "$local_kexts_dir/AppleHDA_$hda_codec.kext"
-    ;;
-    --install-backlightinjector)
-        installKext "$local_kexts_dir/AppleBacklightInjector.kext"
     ;;
     --remove-installed-kexts)
         # Remove kexts that have been installed by this script previously
