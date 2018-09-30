@@ -69,10 +69,10 @@ case "$1" in
     --install-essential-kexts)
         unarchiveAllInDirectory "$downloads_dir"
         EFI=$($DIR/mount_efi.sh)
-        efi_kext_dest=$EFI/EFI/CLOVER/kexts/Other
-        rm -Rf $kext_dest/*.kext
+        efi_kexts_dest=$EFI/EFI/CLOVER/kexts/Other
+        rm -Rf $efi_kexts_dest/*.kext
         for kext in $($DIR/essential_kexts.sh); do
-            installKext $(findKext "$kext" "$downloads_dir" "$local_kexts_dir") "$efi_kext_dest"
+            installKext $(findKext "$kext" "$downloads_dir" "$local_kexts_dir") "$efi_kexts_dest"
         done
     ;;
     --remove-installed-kexts)
