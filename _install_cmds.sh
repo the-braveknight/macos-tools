@@ -136,3 +136,21 @@ function installAppsInDirectory() {
         fi
     done
 }
+
+function removeKext() {
+# $1: Kext name
+    sudo rm -Rf "$kexts_dest/$1"
+    removeInstalledItem "Kexts:$1"
+}
+
+function removeApp() {
+# $1: App name
+    sudo rm -Rf "$apps_dest/$1"
+    removeInstalledItem "Apps:$1"
+}
+
+function removeTool() {
+# $1: Tool name
+    sudo rm -Rf "$tools_dest/$1"
+    removeInstalledItem "Tools:$1"
+}

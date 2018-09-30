@@ -125,3 +125,23 @@ function replaceDict() {
     addDictionary "$1" "$2"
     mergePlist /tmp/org.the-braveknight.node.plist "$1" "$2"
 }
+
+function indexForItemInArray() {
+# $1: Array key in root plist
+# $2: Item (string, integer)
+# $3: Plist file
+    for ((index=0; $? == 0; index++)); do
+        item=$(printValue "$1:$index" "$3" 2> /dev/null)
+        if [[ $? -ne 0 ]]; then return $?; fi
+        if [[ "$item" == "$2" ]]; then
+            echo $index
+            break
+        fi
+    done
+}
+
+function removeItem() {
+# $1: Array key in root plist
+# $2: Plist file
+    $PlistBuddy -c "Delete $1" "$2" 2> /dev/null
+}

@@ -65,10 +65,6 @@ function essential() {
     printArrayItems "$1" "$essentials_plist"
 }
 
-function removeKext() {
-    sudo rm -Rf $kexts_dest/$1 /Library/Extensions/$1 /System/Library/Extensions/$1
-}
-
 case "$1" in
     --download-requirements)
         rm -Rf $downloads_dir && mkdir -p $downloads_dir
