@@ -13,6 +13,7 @@
 		<string>IntelGraphicsFixup.kext</string>
 		<string>CodecCommander.kext</string>
 		<string>USBInjectAll.kext</string>
+		<string>AppleBacklightInjector.kext</string>
 	</array>
 </dict>
 </plist>
