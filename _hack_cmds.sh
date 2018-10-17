@@ -7,6 +7,7 @@ source $DIR/_install_cmds.sh
 source $DIR/_archive_cmds.sh
 source $DIR/_config_cmds.sh
 source $DIR/_hda_cmds.sh
+source $DIR/_lilu_helper.sh
 
 # Required declarations:
 #downloads_dir=Downloads/Kexts
@@ -87,6 +88,7 @@ case "$1" in
         createHDAInjector "$hda_codec" "Resources_$hda_codec" "$local_kexts_dir"
         installKextsInDirectory "$downloads_dir" "$exceptions"
         installKextsInDirectory "$local_kexts_dir"
+        createLiluHelper "$local_kexts_dir"
     ;;
     --install-essential-kexts)
         unarchiveAllInDirectory "$downloads_dir"
