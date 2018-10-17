@@ -6,8 +6,10 @@ DIR=$(dirname ${BASH_SOURCE[0]})
 
 source $DIR/_plist_utils.sh
 
+kexts_directory=/Library/Extensions
+
 function kextsWithLiluDependency() {
-    kexts=$(find /Library/Extensions -name "*.kext")
+    kexts=$(find $kexts_directory -name "*.kext")
     for kext in $kexts; do
         local kext_plist=$kext/Contents/Info.plist
         printValue "OSBundleLibraries:as.vit9696.Lilu" "$kext_plist" > /dev/null
@@ -42,7 +44,7 @@ function createLiluHelper() {
     addString "OSBundleLibraries:com.apple.kpi.mach" "12.0.0" "$plist"
     addString "OSBundleLibraries:com.apple.kpi.unsupported" "12.0.0" "$plist"
 
-    lilu=/Library/Extensions/Lilu.kext
+    lilu=$kexts_directory/Lilu.kext
     lilu_version=$(printValue "OSBundleCompatibleVersion" "$lilu/Contents/Info.plist")
     addString "OSBundleLibraries:as.vit9696.Lilu" "$lilu_version" "$plist"
 
