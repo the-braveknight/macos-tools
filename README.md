@@ -3,4 +3,4 @@ Useful macOS tools and scripts to download & install apps, tools, and kernel ext
 
 ### Credits:
 - zlib: RevoGirl
-- RehabMan: AppleHDA patching scripts & mount_efi.sh
+- RehabMan: AppleHDA patching scripts, mount_efi.sh & create_liluhelper.sh ideas.
