@@ -5,7 +5,7 @@ PlistBuddy=/usr/libexec/PlistBuddy
 function printValue() {
 # $1: Key name
 # $2: Plist file
-    $PlistBuddy -c "Print '$1'" "$2"
+    $PlistBuddy -c "Print '$1'" "$2" 2> /dev/null
 }
 
 function printObject() {

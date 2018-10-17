@@ -19,13 +19,13 @@ function findKext() {
 function findTool() {
 # $1: Tool
 # $2: Directory
-    find "$2" -name "$1" -type f -perm -u+x -not -path \*.kext/* -not -path \*.app/* -not -path \*/Debug/*
+    find "${@:2}" -name "$1" -type f -perm -u+x -not -path \*.kext/* -not -path \*.app/* -not -path \*/Debug/*
 }
 
 function findApp() {
 # $1: App
 # $2: Directory
-    find "$2" -name "$1"
+    find "${@:2}" -name "$1"
 }
 
 function checkExceptions() {
