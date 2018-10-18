@@ -31,6 +31,4 @@ done
 
 shift $((OPTIND-1))
 
-if [[ ! -d "$output_dir" ]]; then output_dir=.; fi
-
 createLiluHelper "$output_dir"

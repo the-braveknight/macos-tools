@@ -6,6 +6,8 @@ DIR=$(dirname ${BASH_SOURCE[0]})
 
 source $DIR/_plist_utils.sh
 
+output_dir=.
+
 kexts_directory=/Library/Extensions
 
 function kextsWithLiluDependency() {
@@ -21,8 +23,11 @@ function kextsWithLiluDependency() {
 
 function createLiluHelper() {
 # $1: Output directory
-    rm -Rf $1/LiluHelper.kext && mkdir -p $1/LiluHelper.kext/Contents
-    local plist=$1/LiluHelper.kext/Contents/Info.plist
+    if [[ -d "$1" ]]; then
+        local output_dir="$1"
+    fi
+    rm -Rf $output_dir/LiluHelper.kext && mkdir -p $output_dir/LiluHelper.kext/Contents
+    local plist=$output_dir/LiluHelper.kext/Contents/Info.plist
 
     addString "CFBundleDevelopmentRegion" "English" "$plist"
     addString "CFBundleGetInfoString" "LiluHelper 1.0, Copyright © 2018 the-braveknight. All rights reserved." "$plist"

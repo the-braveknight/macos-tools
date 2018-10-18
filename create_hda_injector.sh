@@ -4,9 +4,6 @@ DIR=$(dirname ${BASH_SOURCE[0]})
 
 source $DIR/_hda_cmds.sh
 
-native_hda=/System/Library/Extensions/AppleHDA.kext
-native_hcd=$native_hda/Contents/PlugIns/AppleHDAHardwareConfigDriver.kext
-
 function showOptions() {
     echo "-c,  Codec name."
     echo "-r,  Codec resources folder."
