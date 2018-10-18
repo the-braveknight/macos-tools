@@ -83,12 +83,14 @@ case "$1" in
         unarchiveAllInDirectory "$downloads_dir"
         installToolsInDirectory "$downloads_dir" "$exceptions"
     ;;
+    --build-required-kexts)
+        createHDAInjector "$hda_codec" "Resources_$hda_codec" "$local_kexts_dir"
+        createLiluHelper "$local_kexts_dir"
+    ;;
     --install-kexts)
         unarchiveAllInDirectory "$downloads_dir"
-        createHDAInjector "$hda_codec" "Resources_$hda_codec" "$local_kexts_dir"
         installKextsInDirectory "$downloads_dir" "$exceptions"
         installKextsInDirectory "$local_kexts_dir"
-        createLiluHelper "$local_kexts_dir"
     ;;
     --install-essential-kexts)
         unarchiveAllInDirectory "$downloads_dir"
@@ -125,6 +127,7 @@ case "$1" in
         $0 --install-tools
         $0 --install-apps
         $0 --remove-deprecated-kexts
+        $0 --build-required-kexts
         $0 --install-essential-kexts
         $0 --install-kexts
         $0 --update-kernelcache
