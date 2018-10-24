@@ -10,22 +10,10 @@ source $tools_dir/_config_cmds.sh
 source $tools_dir/_hda_cmds.sh
 source $tools_dir/_lilu_helper.sh
 
-if [[ ! -d "$downloads_dir" ]]; then
-    downloads_dir=$repo_dir/Downloads
-fi
-
-if [[ ! -d "$hotpatch_dir" ]]; then
-    hotpatch_dir=$repo_dir/Hotpatch/Downloads
-fi
-
-if [[ ! -d "$local_kexts_dir" ]]; then
-    local_kexts_dir=$repo_dir/Kexts
-fi
-
-if [[ ! -d "$build_dir" ]]; then
-    if [[ ! -d "$repo_dir/Build" ]]; then mkdir $repo_dir/Build; fi
-    build_dir=$repo_dir/Build
-fi
+downloads_dir=$repo_dir/Downloads
+hotpatch_dir=$repo_dir/Hotpatch/Downloads
+local_kexts_dir=$repo_dir/Kexts
+build_dir=$repo_dir/Build
 
 if [[ -z "$repo_plist" ]]; then
     if [[ -e "$repo_dir/repo_config.plist" ]]; then
@@ -45,30 +33,6 @@ if [[ -z "$config_plist" ]]; then
     fi
 fi
 
-exceptions="$(printArrayItems Exceptions $repo_plist)"
-hda_codec="$(printValue Codec $repo_plist)"
-
-function downloadRehabManToolsFromPlist() {
-# $1: Downloads directory
-    for download in $(printArrayItems "Downloads:RehabMan" "$repo_plist"); do
-        bitbucketDownload RehabMan "$download" "$1"
-    done
-}
-
-function downloadAcidantheraToolsFromPlist() {
-# $1: Downloads directory
-    for download in $(printArrayItems "Downloads:Acidanthera" "$repo_plist"); do
-        githubDownload Acidanthera "$download" "$1"
-    done
-}
-
-function downloadHotpatchSSDTsFromPlist() {
-# $1: Downloads directory
-    for ssdt in $(printArrayItems "Downloads:Hotpatch" "$repo_plist"); do
-        downloadSSDT "$ssdt" "$1"
-    done
-}
-
 function installed() {
 # $1: Can be either 'Kexts', 'Apps', or 'Tools'.
     printInstalledItems "$1"
@@ -79,67 +43,109 @@ function deprecated() {
     printArrayItems "Deprecated:$1" "$repo_plist"
 }
 
-function essential() {
+function installation() {
 # $1: Can be either 'Kexts', 'Apps', or 'Tools'.
-    printArrayItems "Essentials:$1" "$repo_plist"
+    for ((index=0; 1; index++)); do
+        name=$(printValue "Installations:$1:$index:Name" "$repo_plist" 2> /dev/null)
+        if [[ $? -ne 0 ]]; then break; fi
+        echo "$name"
+    done
 }
 
 case "$1" in
     --download-requirements)
         rm -Rf $downloads_dir && mkdir -p $downloads_dir
-        downloadRehabManToolsFromPlist "$downloads_dir"
-        downloadAcidantheraToolsFromPlist "$downloads_dir"
-
         rm -Rf $hotpatch_dir && mkdir -p $hotpatch_dir
-        downloadHotpatchSSDTsFromPlist "$hotpatch_dir"
+
+        # Bitbucket downloads
+        for ((index=0; 1; index++)); do
+            author=$(printValue "Downloads:Bitbucket:$index:Author" "$repo_plist")
+            repo=$(printValue "Downloads:Bitbucket:$index:Repo" "$repo_plist")
+            if [[ $? -ne 0 ]]; then break; fi
+            name=$(printValue "Downloads:Bitbucket:$index:Name" "$repo_plist" 2> /dev/null)
+            bitbucketDownload "$author" "$repo" "$downloads_dir" "$name"
+        done
+
+        # GitHub downloads
+        for ((index=0; 1; index++)); do
+            author=$(printValue "Downloads:GitHub:$index:Author" "$repo_plist")
+            repo=$(printValue "Downloads:GitHub:$index:Repo" "$repo_plist")
+            if [[ $? -ne 0 ]]; then break; fi
+            name=$(printValue "Downloads:GitHub:$index:Name" "$repo_plist" 2> /dev/null)
+            githubDownload "$author" "$repo" "$downloads_dir" "$name"
+        done
+
+        # Hotpatch SSDT downloads
+        for ssdt in $(printArrayItems "Downloads:Hotpatch" "$repo_plist"); do
+            downloadSSDT "$ssdt" "$hotpatch_dir"
+        done
     ;;
     --install-apps)
         unarchiveAllInDirectory "$downloads_dir"
-        installAppsInDirectory "$downloads_dir" "$exceptions"
+        for app in $(installation "Apps"); do
+            installApp $(findApp "$app" "$downloads_dir")
+        done
     ;;
     --install-tools)
         unarchiveAllInDirectory "$downloads_dir"
-        installToolsInDirectory "$downloads_dir" "$exceptions"
+        for tool in $(installation "Tools"); do
+            installTool $(findTool "$tool" "$downloads_dir")
+        done
     ;;
-    --build-required-kexts)
-        createHDAInjector "$hda_codec" "Resources_$hda_codec" "$build_dir"
+    --build-kexts)
+        if [[ ! -d "$build_dir" ]]; then mkdir $build_dir; fi
+        hda_codec=$(printValue "Codec" "$repo_plist" 2> /dev/null)
+        if [[ -n "$hda_codec" ]]; then
+            createHDAInjector "$hda_codec" "Resources_$hda_codec" "$build_dir"
+        fi
         createLiluHelper "$build_dir"
     ;;
     --install-kexts)
         unarchiveAllInDirectory "$downloads_dir"
-        installKextsInDirectory "$downloads_dir" "$exceptions"
-        installKextsInDirectory "$build_dir" "$exceptions"
-        if [[ -d "$local_kexts_dir" ]]; then
-            installKextsInDirectory "$local_kexts_dir" "$exceptions"
-        fi
+        for kext in $(installation "Kexts"); do
+            installKext $(findKext "$kext" "$downloads_dir" "$build_dir" "$local_kexts_dir")
+        done
     ;;
     --install-essential-kexts)
         unarchiveAllInDirectory "$downloads_dir"
         EFI=$($tools_dir/mount_efi.sh)
         efi_kexts_dest=$EFI/EFI/CLOVER/kexts/Other
         rm -Rf $efi_kexts_dest/*.kext
-        for kext in $(essential "Kexts"); do
-            installKext $(findKext "$kext" "$downloads_dir" "$build_dir" "$local_kexts_dir") "$efi_kexts_dest"
+        for ((index=0; 1; index++)); do
+            name=$(printValue "Installations:Kexts:$index:Name" "$repo_plist" 2> /dev/null)
+            if [[ $? -ne 0 ]]; then break; fi
+            essential=$(printValue "Installations:Kexts:$index:Essential" "$repo_plist" 2> /dev/null)
+            if [[ "$essential" == "true" ]]; then
+                installKext $(findKext "$name" "$downloads_dir" "$build_dir" "$local_kexts_dir") "$efi_kexts_dest"
+            fi
         done
     ;;
     --remove-installed-kexts)
-        # Remove kexts that have been installed by this script previously
         for kext in $(installed "Kexts"); do
-            removeKext $kext
+            removeKext "$kext"
+        done
+    ;;
+    --remove-installed-apps)
+        for app in $(installed "Apps"); do
+            removeApp "$app"
+        done
+    ;;
+    --remove-installed-tools)
+        for tool in $(installed "Tools"); do
+            removeTool "$tool"
         done
     ;;
     --remove-deprecated-kexts)
         # Remove deprecated kexts
-        # More info: https://github.com/the-braveknight/macos-tools/blob/master/org.the-braveknight.deprecated.plist
         for kext in $(deprecated "Kexts"); do
-            removeKext $kext
+            removeKext "$kext"
         done
     ;;
     --install-config)
-        installConfig $config_plist
+        installConfig "$config_plist"
     ;;
     --update-config)
-        updateConfig $config_plist
+        updateConfig "$config_plist"
     ;;
     --update-kernelcache)
         sudo kextcache -i /
@@ -148,13 +154,13 @@ case "$1" in
         echo "Checking for updates..."
         git stash --quiet && git pull
         echo "Checking for macos-tools updates..."
-        cd $macos_tools && git stash --quiet && git pull && cd ..
+        cd $tools_dir && git stash --quiet && git pull && cd ..
     ;;
     --install-downloads)
         $0 --install-tools
         $0 --install-apps
         $0 --remove-deprecated-kexts
-        $0 --build-required-kexts
+        $0 --build-kexts
         $0 --install-essential-kexts
         $0 --install-kexts
         $0 --update-kernelcache
