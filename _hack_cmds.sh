@@ -13,6 +13,7 @@ source $tools_dir/_lilu_helper.sh
 downloads_dir=$repo_dir/Downloads
 hotpatch_dir=$repo_dir/Hotpatch/Downloads
 local_kexts_dir=$repo_dir/Kexts
+build_dir=$repo_dir/Build
 
 if [[ -z "$repo_plist" ]]; then
     if [[ -e "$repo_dir/repo_config.plist" ]]; then
@@ -137,6 +138,11 @@ case "$1" in
     --update-kernelcache)
         sudo kextcache -i /
     ;;
+    --install-lilu-helper)
+        if [[ ! -d "$build_dir" ]]; then mkdir $build_dir; fi
+        createLiluHelper "$build_dir"
+        installKext "$build_dir/LiluHelper.kext"
+    ;;
     --update)
         echo "Checking for updates..."
         git stash --quiet && git pull
@@ -149,6 +155,7 @@ case "$1" in
         $0 --remove-deprecated-kexts
         $0 --install-essential-kexts
         $0 --install-kexts
+        $0 --install-lilu-helper
         $0 --update-kernelcache
     ;;
 esac
