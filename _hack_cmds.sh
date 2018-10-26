@@ -15,6 +15,8 @@ hotpatch_dir=$repo_dir/Hotpatch/Downloads
 local_kexts_dir=$repo_dir/Kexts
 build_dir=$repo_dir/Build
 
+tools_config=$tools_dir/org.the-braveknight.config.plist
+
 if [[ -z "$repo_plist" ]]; then
     if [[ -e "$repo_dir/repo_config.plist" ]]; then
         repo_plist=$repo_dir/repo_config.plist
@@ -236,7 +238,14 @@ case "$1" in
         done
     ;;
     --remove-deprecated-kexts)
-        for kext in $(printArrayItems "Deprecated:Kexts" "$repo_plist"); do
+        # To override default list of deprecated kexts in macos-tools/org.the-braveknight.deprecated.plist, set 'Deprecated:Override Defaults' to 'true'.
+        override=$(printValue "Deprecated:Override Defaults" "$repo_plist" 2> /dev/null)
+        if [[ "$override" != "true" ]]; then
+            for kext in $(printArrayItems "Deprecated:Kexts" "$tools_config" 2> /dev/null); do
+                removeKext "$kext"
+            done
+        fi
+        for kext in $(printArrayItems "Deprecated:Kexts" "$repo_plist" 2> /dev/null); do
             removeKext "$kext"
         done
     ;;
