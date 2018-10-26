@@ -33,6 +33,39 @@ if [[ -z "$config_plist" ]]; then
     fi
 fi
 
+function installAppWithName() {
+# $1: App name
+    app=$(findApp "$1" "$downloads_dir")
+    if [[ -e "$app" ]]; then
+        installApp "$app"
+    fi
+}
+
+function installKextWithName() {
+# $1: Kext name
+    kext=$(findKext "$1" "$downloads_dir" "$local_kexts_dir")
+    if [[ -e "$kext" ]]; then
+        installKext "$kext"
+    fi
+}
+
+function installToolWithName() {
+# $1: Tool name
+    tool=$(findTool "$1" "$downloads_dir")
+    if [[ -e "$tool" ]]; then
+        installTool "$tool"
+    fi
+}
+
+function installEssentialKextWithName() {
+# $1: Kext name
+    if [[ ! -d "$efi" ]]; then efi=$($tools_dir/mount_efi.sh); fi
+    kext=$(findKext "$1" "$downloads_dir" "$local_kexts_dir")
+    if [[ -e "$kext" ]]; then
+        installKext "$kext" "$efi/EFI/CLOVER/kexts/Other"
+    fi
+}
+
 case "$1" in
     --download-requirements)
         rm -Rf $downloads_dir && mkdir -p $downloads_dir
@@ -63,35 +96,84 @@ case "$1" in
     ;;
     --install-apps)
         unarchiveAllInDirectory "$downloads_dir"
-        for ((index=0; 1; index++)); do
-            name=$(printValue "Installations:Apps:$index:Name" "$repo_plist" 2> /dev/null)
+
+        # GitHub apps
+        for ((downloadIndex=0; 1; downloadIndex++)); do
+            download=$(printValue "Downloads:GitHub:$downloadIndex" "$repo_plist" 2> /dev/null)
             if [[ $? -ne 0 ]]; then break; fi
-            app=$(findApp "$name" "$downloads_dir")
-            if [[ -e "$app" ]]; then
-                installApp "$app"
-            fi
+            for ((installIndex=0; 1; installIndex++)); do
+                name=$(printValue "Downloads:GitHub:$downloadIndex:Installations:Apps:$installIndex:Name" "$repo_plist" 2> /dev/null)
+                if [[ $? -ne 0 ]]; then break; fi
+                installAppWithName "$name"
+            done
+        done
+
+        # Bitbucket apps
+        for ((downloadIndex=0; 1; downloadIndex++)); do
+            download=$(printValue "Downloads:Bitbucket:$downloadIndex" "$repo_plist" 2> /dev/null)
+            if [[ $? -ne 0 ]]; then break; fi
+            for ((installIndex=0; 1; installIndex++)); do
+                name=$(printValue "Downloads:Bitbucket:$downloadIndex:Installations:Apps:$installIndex:Name" "$repo_plist" 2> /dev/null)
+                if [[ $? -ne 0 ]]; then break; fi
+                installAppWithName "$name"
+            done
         done
     ;;
     --install-tools)
         unarchiveAllInDirectory "$downloads_dir"
-        for ((index=0; 1; index++)); do
-            name=$(printValue "Installations:Tools:$index:Name" "$repo_plist" 2> /dev/null)
+
+        # GitHub tools
+        for ((downloadIndex=0; 1; downloadIndex++)); do
+            download=$(printValue "Downloads:GitHub:$downloadIndex" "$repo_plist" 2> /dev/null)
             if [[ $? -ne 0 ]]; then break; fi
-            tool=$(findTool "$name" "$downloads_dir")
-            if [[ -e "$tool" ]]; then
-                installTool "$tool"
-            fi
+            for ((installIndex=0; 1; installIndex++)); do
+                name=$(printValue "Downloads:GitHub:$downloadIndex:Installations:Tools:$installIndex:Name" "$repo_plist" 2> /dev/null)
+                if [[ $? -ne 0 ]]; then break; fi
+                installToolWithName "$name"
+            done
+        done
+
+        # Bitbucket tools
+        for ((downloadIndex=0; 1; downloadIndex++)); do
+            download=$(printValue "Downloads:Bitbucket:$downloadIndex" "$repo_plist" 2> /dev/null)
+            if [[ $? -ne 0 ]]; then break; fi
+            for ((installIndex=0; 1; installIndex++)); do
+                name=$(printValue "Downloads:Bitbucket:$downloadIndex:Installations:Tools:$installIndex:Name" "$repo_plist" 2> /dev/null)
+                if [[ $? -ne 0 ]]; then break; fi
+                installToolWithName "$name"
+            done
         done
     ;;
     --install-kexts)
         unarchiveAllInDirectory "$downloads_dir"
-        for ((index=0; 1; index++)); do
-            name=$(printValue "Installations:Kexts:$index:Name" "$repo_plist" 2> /dev/null)
+
+        # GitHub kexts
+        for ((downloadIndex=0; 1; downloadIndex++)); do
+            download=$(printValue "Downloads:GitHub:$downloadIndex" "$repo_plist" 2> /dev/null)
             if [[ $? -ne 0 ]]; then break; fi
-            kext=$(findKext "$name" "$downloads_dir" "$local_kexts_dir")
-            if [[ -e "$kext" ]]; then
-                installKext "$kext"
-            fi
+            for ((installIndex=0; 1; installIndex++)); do
+                name=$(printValue "Downloads:GitHub:$downloadIndex:Installations:Kexts:$installIndex:Name" "$repo_plist" 2> /dev/null)
+                if [[ $? -ne 0 ]]; then break; fi
+                installKextWithName "$name"
+            done
+        done
+
+        # Bitbucket kexts
+        for ((downloadIndex=0; 1; downloadIndex++)); do
+            download=$(printValue "Downloads:Bitbucket:$downloadIndex" "$repo_plist" 2> /dev/null)
+            if [[ $? -ne 0 ]]; then break; fi
+                for ((installIndex=0; 1; installIndex++)); do
+                name=$(printValue "Downloads:Bitbucket:$downloadIndex:Installations:Kexts:$installIndex:Name" "$repo_plist" 2> /dev/null)
+                if [[ $? -ne 0 ]]; then break; fi
+                installKextWithName "$name"
+            done
+        done
+
+        # Local kexts
+        for ((index=0; 1; index++)); do
+            name=$(printValue "Local Installations:Kexts:$index:Name" "$repo_plist" 2> /dev/null)
+            if [[ $? -ne 0 ]]; then break; fi
+            installKextWithName "$name"
         done
     ;;
     --install-essential-kexts)
@@ -99,13 +181,42 @@ case "$1" in
         EFI=$($tools_dir/mount_efi.sh)
         efi_kexts_dest=$EFI/EFI/CLOVER/kexts/Other
         rm -Rf $efi_kexts_dest/*.kext
-        for ((index=0; 1; index++)); do
-            name=$(printValue "Installations:Kexts:$index:Name" "$repo_plist" 2> /dev/null)
+
+        # GitHub kexts
+        for ((downloadIndex=0; 1; downloadIndex++)); do
+            download=$(printValue "Downloads:GitHub:$downloadIndex" "$repo_plist" 2> /dev/null)
             if [[ $? -ne 0 ]]; then break; fi
-            essential=$(printValue "Installations:Kexts:$index:Essential" "$repo_plist" 2> /dev/null)
-            kext=$(findKext "$name" "$downloads_dir" "$local_kexts_dir")
-            if [[ -e "$kext" && "$essential" == "true" ]]; then
-                installKext "$kext" "$efi_kexts_dest"
+            for ((installIndex=0; 1; installIndex++)); do
+                name=$(printValue "Downloads:GitHub:$downloadIndex:Installations:Kexts:$installIndex:Name" "$repo_plist" 2> /dev/null)
+                if [[ $? -ne 0 ]]; then break; fi
+                essential=$(printValue "Downloads:GitHub:$downloadIndex:Installations:Kexts:$installIndex:Essential" "$repo_plist" 2> /dev/null)
+                if [[ "$essential" == "true" ]]; then
+                    installEssentialKextWithName "$name"
+                fi
+            done
+        done
+
+        # Bitbucket kexts
+        for ((downloadIndex=0; 1; downloadIndex++)); do
+            download=$(printValue "Downloads:Bitbucket:$downloadIndex" "$repo_plist" 2> /dev/null)
+            if [[ $? -ne 0 ]]; then break; fi
+            for ((installIndex=0; 1; installIndex++)); do
+                name=$(printValue "Downloads:Bitbucket:$downloadIndex:Installations:Kexts:$installIndex:Name" "$repo_plist" 2> /dev/null)
+                if [[ $? -ne 0 ]]; then break; fi
+                essential=$(printValue "Downloads:Bitbucket:$downloadIndex:Installations:Kexts:$installIndex:Essential" "$repo_plist" 2> /dev/null)
+                if [[ "$essential" == "true" ]]; then
+                    installEssentialKextWithName "$name"
+                fi
+            done
+        done
+
+        # Local kexts
+        for ((index=0; 1; index++)); do
+            name=$(printValue "Local Installations:Kexts:$index:Name" "$repo_plist" 2> /dev/null)
+            if [[ $? -ne 0 ]]; then break; fi
+            essential=$(printValue "Local Installations:Kexts:$index:Essential" "$repo_plist" 2> /dev/null)
+            if [[ "$essential" == "true" ]]; then
+                installEssentialKextWithName "$name"
             fi
         done
     ;;
