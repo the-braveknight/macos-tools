@@ -11,7 +11,7 @@ output_dir=.
 kexts_directory=/Library/Extensions
 
 function kextsWithLiluDependency() {
-    kexts=$(find $kexts_directory -name "*.kext")
+    kexts=$(find $kexts_directory -name "*.kext" -not -name "LiluHelper.kext")
     for kext in $kexts; do
         local kext_plist=$kext/Contents/Info.plist
         printValue "OSBundleLibraries:as.vit9696.Lilu" "$kext_plist" > /dev/null
@@ -57,6 +57,9 @@ function createLiluHelper() {
         local kext_plist=$kext/Contents/Info.plist
         local identifier=$(printValue "CFBundleIdentifier" "$kext_plist")
         local version=$(printValue "OSBundleCompatibleVersion" "$kext_plist")
+        if [[ $? -ne 0 ]]; then
+            local version=$(printValue "OSBundleVersion" "$kext_plist")
+        fi
         addString "OSBundleLibraries:$identifier" "$version" "$plist"
     done
 }
