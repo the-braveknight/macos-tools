@@ -56,7 +56,7 @@ function createLiluHelper() {
     for kext in $(kextsWithLiluDependency); do
         local kext_plist=$kext/Contents/Info.plist
         local identifier=$(printValue "CFBundleIdentifier" "$kext_plist")
-        local version=$(printValue "CFBundleVersion" "$kext_plist")
+        local version=$(printValue "OSBundleCompatibleVersion" "$kext_plist")
         addString "OSBundleLibraries:$identifier" "$version" "$plist"
     done
 }
