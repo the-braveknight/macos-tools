@@ -49,17 +49,13 @@ function githubDownload() {
         local partial_name="$3"
     fi
     curl --silent --location "https://github.com/$1/$2/releases" --output "/tmp/org.$1.download.txt"
-    filename_matched=$(grep -o -m 1 "/.*$partial_name.*\.zip" "/tmp/org.$1.download.txt")
-    release=$(grep -o -m 1 "/.RELEASE.*\.zip" "/tmp/org.$1.download.txt")
-    debug=$(grep -o -m 1 "/.*DEBUG.*\.zip" "/tmp/org.$1.download.txt")
-    if [[ -n "$filename_matched" ]]; then
-        scrape=$filename_matched
-    elif [[ -n "$release" ]]; then
-        scrape=$release
-    elif [[ -n "$debug" ]]; then
-        scrape=$debug
+    if [[ -n "$partial_name" ]]; then
+        local scrape=$(grep -o -m 1 "/.*$partial_name.*\.zip" "/tmp/org.$1.download.txt")
+    else
+        # Look for *RELEASE*.zip
+        local scrape=$(grep -o -m 1 "/.*RELEASE.*\.zip" "/tmp/org.$1.download.txt")
     fi
-    fileName="$1-$2.zip"
+    local fileName="$1-$2.zip"
     echo Downloading $fileName to $output_dir
     curl --progress-bar --location https://github.com/$scrape --output $output_dir/$fileName
 }
