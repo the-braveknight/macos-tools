@@ -92,9 +92,7 @@ case "$1" in
         done
 
         # Hotpatch SSDT downloads
-        for ssdt in $(printArrayItems "Downloads:Hotpatch" "$repo_plist"); do
-            downloadSSDT "$ssdt" "$hotpatch_dir"
-        done
+        downloadAllHotpatchSSDTs "$hotpatch_dir"
     ;;
     --install-apps)
         unarchiveAllInDirectory "$downloads_dir"

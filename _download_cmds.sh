@@ -15,6 +15,16 @@ function downloadSSDT() {
     curl --progress-bar --location "$url" --output "$output_dir/$1"
 }
 
+function downloadAllHotpatchSSDTs() {
+# $1: Output directory (optional)
+    if [[ -d "$output_dir" ]]; then
+        local output_dir="$1"
+    fi
+    rm -Rf /tmp/Hotpatch.git
+    git clone https://github.com/RehabMan/OS-X-Clover-Laptop-Config /tmp/Hotpatch.git -q
+    cp /tmp/Hotpatch.git/hotpatch/*.dsl "$output_dir"
+}
+
 function bitbucketDownload() {
 # $1: Author
 # $2: Repo
