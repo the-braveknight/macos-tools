@@ -21,7 +21,7 @@ function downloadAllHotpatchSSDTs() {
         local output_dir="$1"
     fi
     rm -Rf /tmp/Hotpatch.git
-    git clone https://github.com/RehabMan/OS-X-Clover-Laptop-Config /tmp/Hotpatch.git -q
+    git clone https://github.com/RehabMan/OS-X-Clover-Laptop-Config /tmp/Hotpatch.git -q 2> /dev/null
     cp /tmp/Hotpatch.git/hotpatch/*.dsl "$output_dir"
 }
 
